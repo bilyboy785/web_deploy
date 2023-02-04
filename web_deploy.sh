@@ -274,7 +274,8 @@ case $1 in
         init_server $2
         ;;
     update|-u|--u)
-        cd /opt/web_deploy && git pull --quiet && cd
+        echo "# Updating repo"
+        cd /opt/web_deploy && git pull && cd
         exit 0
         ;;
     deploy|-d|--d)
