@@ -274,7 +274,7 @@ case $1 in
         init_server $2
         ;;
     update|-u|--u)
-        update_script
+        cd /opt/web_deploy && git pull --quiet && cd
         exit 0
         ;;
     deploy|-d|--d)
