@@ -151,11 +151,11 @@ function init_server {
     if [[ -f /etc/nginx/sites-available/default ]]; then
         rm -f /etc/nginx/sites-enabled/default > /dev/null 2>&1
         rm -f /etc/nginx/sites-available/default > /dev/null 2>&1
-        curl -s https://raw.githubusercontent.com/bilyboy785/public/main/nginx/tmpl/default.conf -o /etc/nginx/sites-available/000-default.conf
-        ln -s /etc/nginx/sites-available/000-default.conf /etc/nginx/sites-enabled/000-default.conf > /dev/null 2>&1
-        sed -i "s/SERVER_HOSTNAME/${HOSTNAME}/g" /etc/nginx/sites-available/000-default.conf
-        systemctl restart nginx.service > /dev/null 2>&1
     fi
+    curl -s https://raw.githubusercontent.com/bilyboy785/public/main/nginx/tmpl/default.conf -o /etc/nginx/sites-available/000-default.conf
+    ln -s /etc/nginx/sites-available/000-default.conf /etc/nginx/sites-enabled/000-default.conf > /dev/null 2>&1
+    sed -i "s/SERVER_HOSTNAME/${HOSTNAME}/g" /etc/nginx/sites-available/000-default.conf
+    systemctl restart nginx.service > /dev/null 2>&1
 
 
     curl -s https://raw.githubusercontent.com/bilyboy785/public/main/monitoring/docker-compose.yml.j2 -o /opt/docker-compose.yml
