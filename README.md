@@ -6,7 +6,7 @@ Easy script to deploy Web Stack
 ### Init du serveur
 
 ```
-git clone https://github.com/bilyboy785/web_deploy.git /opt/web_deploy && ln -s /opt/web_deploy/web_deploy.sh $HOME/.local/bin/web_deploy && chmod +x /opt/web_deploy/web_deploy.sh
+git clone https://github.com/bilyboy785/web_deploy.git /opt/web_deploy && mkdir -p $HOME/.local/bin && ln -s /opt/web_deploy/web_deploy.sh $HOME/.local/bin/web_deploy && chmod +x /opt/web_deploy/web_deploy.sh
 bash $HOME/.local/bin/web_deploy -i
 ```
 

@@ -290,9 +290,21 @@ case $1 in
             echo "dns_cloudflare_email = ${CF_API_EMAIL}" > /root/.cloudflare-creds
             echo "dns_cloudflare_api_key = ${CF_API_KEY}" >> /root/.cloudflare-creds
         fi
-        DOMAIN_NAME="$2"
+        if [[ ! -z $2 ]]; then
+            DOMAIN_NAME="$2"
+        else
+            read -p "Nom de domaine à déployer : " DOMAIN_NAME
+        fi
         FTP_DOMAIN=$(echo $DOMAIN_NAME | sed 's/www\.//g')
         PRIMARY_DOMAIN=${DOMAIN_NAME}
+        echo $DOMAIN_NAME | grep "www." > /dev/null 2>&1
+        if [[ $? -eq 0 ]]; then
+            SECONDARY_DOMAIN=$(echo $DOMAIN_NAME | sed 's/www\.//g')
+        else
+            SECONDARY_DOMAIN=""
+        fi
+        read -p "Aliases à ajouter aux vhost (Default : $SECONDARY_DOMAIN): " SECONDARY_DOMAIN_TMP
+        SECONDARY_DOMAIN="${SECONDARY_DOMAIN_TMP:=$SECONDARY_DOMAIN}"
         if [[ ! -z $3 ]]; then
             PHP_VERSION=$3
         else
@@ -312,12 +324,6 @@ case $1 in
         SQL_PASSWORD=$(pwgen 26 -1)
         WP_PASSWORD=$(pwgen 26 -1)
         FTP_USER="admin@${FTP_DOMAIN}"
-        echo $DOMAIN_NAME | grep "www." > /dev/null 2>&1
-        if [[ $? -eq 0 ]]; then
-            SECONDARY_DOMAIN=$(echo $DOMAIN_NAME | sed 's/www\.//g')
-        else
-            SECONDARY_DOMAIN="www.${DOMAIN_NAME}"
-        fi
         HOME_PATH="/var/www/html/${DOMAIN_NAME}"
         WEBROOT_PATH="${HOME_PATH}/web"
         ENV_FILE="/opt/websites/${PRIMARY_DOMAIN}.env"
@@ -376,7 +382,7 @@ case $1 in
                 j2 /tmp/vhost.tmpl.j2 > /etc/nginx/sites-available/${PRIMARY_DOMAIN}.conf
 
                 if [[ ! -d /etc/letsencrypt/live/${HOST} ]]; then
-                    echo "# Génération du certificat SSL pour le FTP TLS"
+                    echo " - Génération du certificat SSL pour le FTP TLS"
                     certbot -n --quiet certonly --agree-tos --dns-cloudflare --dns-cloudflare-propagation-seconds 30 --dns-cloudflare-credentials /root/.cloudflare-creds -d ${HOSTNAME} -m ${LE_EMAIL} --rsa-key-size 4096
                     systemctl restart proftpd.service
                 fi
