@@ -305,6 +305,9 @@ case $1 in
         fi
         read -p "Aliases à ajouter aux vhost (Default : $SECONDARY_DOMAIN): " SECONDARY_DOMAIN_TMP
         SECONDARY_DOMAIN="${SECONDARY_DOMAIN_TMP:=$SECONDARY_DOMAIN}"
+        echo $PRIMARY_DOMAIN
+        echo $SECONDARY_DOMAIN
+        exit 0
         if [[ ! -z $3 ]]; then
             PHP_VERSION=$3
         else
