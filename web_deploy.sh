@@ -302,7 +302,7 @@ case $1 in
             SECONDARY_DOMAIN=$(echo $DOMAIN_NAME | sed 's/www\.//g')
             SECONDARY_DOMAIN_TXT="Default : $SECONDARY_DOMAIN"
         else
-            SECONDARY_DOMAIN="empty"
+            SECONDARY_DOMAIN=""
             SECONDARY_DOMAIN_TXT="aucun"
         fi
         read -p "Aliases à ajouter aux vhost ($SECONDARY_DOMAIN_TXT): " SECONDARY_DOMAIN_TMP
@@ -393,7 +393,12 @@ case $1 in
                 fi
                 if [[ ! -d /etc/letsencrypt/live/${PRIMARY_DOMAIN} ]]; then
                     echo " - Generation du certificat SSL"
-                    certbot -n --quiet certonly --agree-tos --dns-cloudflare --dns-cloudflare-propagation-seconds 30 --dns-cloudflare-credentials /root/.cloudflare-creds -d ${PRIMARY_DOMAIN} -d ${SECONDARY_DOMAIN} -m ${LE_EMAIL} --rsa-key-size 4096
+                    if [[ -z $SECONDARY_DOMAIN ]]; then
+                        certbot -n --quiet certonly --agree-tos --dns-cloudflare --dns-cloudflare-propagation-seconds 30 --dns-cloudflare-credentials /root/.cloudflare-creds -d ${PRIMARY_DOMAIN} -m ${LE_EMAIL} --rsa-key-size 4096
+                    else
+                        certbot -n --quiet certonly --agree-tos --dns-cloudflare --dns-cloudflare-propagation-seconds 30 --dns-cloudflare-credentials /root/.cloudflare-creds -d ${PRIMARY_DOMAIN} -d ${SECONDARY_DOMAIN} -m ${LE_EMAIL} --rsa-key-size 4096
+                    fi
+                    
                 fi
                 if [[ $? -eq 0 ]]; then
                     ln -s /etc/nginx/sites-available/${PRIMARY_DOMAIN}.conf /etc/nginx/sites-enabled/${PRIMARY_DOMAIN}.conf
