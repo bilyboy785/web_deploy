@@ -300,10 +300,12 @@ case $1 in
         echo $DOMAIN_NAME | grep "www." > /dev/null 2>&1
         if [[ $? -eq 0 ]]; then
             SECONDARY_DOMAIN=$(echo $DOMAIN_NAME | sed 's/www\.//g')
+            SECONDARY_DOMAIN_TXT="Default : $SECONDARY_DOMAIN"
         else
-            SECONDARY_DOMAIN=""
+            SECONDARY_DOMAIN="empty"
+            SECONDARY_DOMAIN_TXT="aucun"
         fi
-        read -p "Aliases à ajouter aux vhost (Default : $SECONDARY_DOMAIN): " SECONDARY_DOMAIN_TMP
+        read -p "Aliases à ajouter aux vhost ($SECONDARY_DOMAIN_TXT): " SECONDARY_DOMAIN_TMP
         SECONDARY_DOMAIN="${SECONDARY_DOMAIN_TMP:=$SECONDARY_DOMAIN}"
         echo $PRIMARY_DOMAIN
         echo $SECONDARY_DOMAIN
