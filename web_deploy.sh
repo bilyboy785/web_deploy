@@ -307,9 +307,6 @@ case $1 in
         fi
         read -p "Aliases à ajouter aux vhost ($SECONDARY_DOMAIN_TXT): " SECONDARY_DOMAIN_TMP
         SECONDARY_DOMAIN="${SECONDARY_DOMAIN_TMP:=$SECONDARY_DOMAIN}"
-        echo $PRIMARY_DOMAIN
-        echo $SECONDARY_DOMAIN
-        exit 0
         if [[ ! -z $3 ]]; then
             PHP_VERSION=$3
         else
@@ -381,10 +378,12 @@ case $1 in
                 echo " - Déploiement du pool FPM"
                 curl -s https://raw.githubusercontent.com/bilyboy785/public/main/php/pool.tmpl.j2 -o /tmp/pool.tmpl.j2
                 j2 /tmp/pool.tmpl.j2 > /etc/php/${PHP_VERSION}/fpm/pool.d/${PRIMARY_DOMAIN}.conf
+                rm -f /tmp/pool.tmpl.j2
                 systemctl restart php${PHP_VERSION}-fpm.service
                 echo " - Déploiement du vhost Nginx"
                 curl -s https://raw.githubusercontent.com/bilyboy785/public/main/nginx/tmpl/vhost.j2 -o /tmp/vhost.tmpl.j2
                 j2 /tmp/vhost.tmpl.j2 > /etc/nginx/sites-available/${PRIMARY_DOMAIN}.conf
+                rm -f /tmp/vhost.tmpl.j2
 
                 if [[ ! -d /etc/letsencrypt/live/${HOST} ]]; then
                     echo " - Génération du certificat SSL pour le FTP TLS"
