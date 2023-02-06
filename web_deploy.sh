@@ -194,16 +194,19 @@ function init_server {
         systemctl restart nginx.service > /dev/null 2>&1
     fi
 
-    curl -s https://raw.githubusercontent.com/bilyboy785/public/main/monitoring/docker-compose.yml.j2 -o /opt/docker-compose.yml
-    curl -s https://raw.githubusercontent.com/bilyboy785/public/main/monitoring/promtail.config.yml -o /opt/promtail.config.yml
-    if [[ ! -z $1 ]]; then
-        MONITORING_IP=$1
-    else
-        read -p "Adresse IP de la stack de monitoring (Loki / Prometheus / Grafana) : " MONITORING_IP
+    if [[ ! -f /opt/promtail.config.yml ]]; then
+        curl -s https://raw.githubusercontent.com/bilyboy785/public/main/monitoring/docker-compose.yml.j2 -o /opt/docker-compose.yml
+        curl -s https://raw.githubusercontent.com/bilyboy785/public/main/monitoring/promtail.config.yml -o /opt/promtail.config.yml
+        if [[ ! -z $1 ]]; then
+            MONITORING_IP=$1
+        else
+            read -p "Adresse IP de la stack de monitoring (Loki / Prometheus / Grafana) : " MONITORING_IP
+        fi
+        sed -i "s/LOKI_IP/${MONITORING_IP}/g" /opt/promtail.config.yml
+        sed -i "s/YOUR_HOSTNAME/${HOSTNAME}/g" /opt/promtail.config.yml
+        docker-compose -p monitoring -f /opt/docker-compose.yml pull
+        docker-compose -p monitoring -f /opt/docker-compose.yml up -d
     fi
-    sed -i "s/LOKI_IP/${MONITORING_IP}/g" /opt/promtail.config.yml
-    sed -i "s/YOUR_HOSTNAME/${HOSTNAME}/g" /opt/promtail.config.yml
-    docker-compose -p monitoring -f /opt/docker-compose.yml up -d
     
     mkdir -p /var/www/errors > /dev/null 2>&1
     HTML_PAGES=(400 401 403 404 405 410 500 502 503 index)
