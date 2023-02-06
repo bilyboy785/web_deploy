@@ -179,6 +179,14 @@ function init_server {
     ln -s /etc/nginx/sites-available/000-default.conf /etc/nginx/sites-enabled/000-default.conf > /dev/null 2>&1
     sed -i "s/SERVER_HOSTNAME/${HOSTNAME}/g" /etc/nginx/sites-available/000-default.conf
 
+    if [[ ! -f /root/.cloudflare-creds ]]; then
+        touch /root/.cloudflare-creds
+        read -p "Cloudflare API email : " CF_API_EMAIL
+        read -p "Cloudflare API Key : " CF_API_KEY
+        echo "dns_cloudflare_email = ${CF_API_EMAIL}" > /root/.cloudflare-creds
+        echo "dns_cloudflare_api_key = ${CF_API_KEY}" >> /root/.cloudflare-creds
+    fi
+
     if [[ ! -d /etc/letsencrypt/live/${HOSTNAME} ]]; then
         echo "# Génération du certificat SSL pour le FTP TLS & default Vhost"
         $HOME/.local/bin/certbot -n --quiet certonly --agree-tos --dns-cloudflare --dns-cloudflare-propagation-seconds 30 --dns-cloudflare-credentials /root/.cloudflare-creds -d ${HOSTNAME} -m ${LE_EMAIL} --rsa-key-size 4096
@@ -297,13 +305,6 @@ case $1 in
         echo "## Website deployment"
         if [[ ! -d /opt/websites ]]; then
             mkdir -p /opt/websites
-        fi
-        if [[ ! -f /root/.cloudflare-creds ]]; then
-            touch /root/.cloudflare-creds
-            read -p "Cloudflare API email : " CF_API_EMAIL
-            read -p "Cloudflare API Key : " CF_API_KEY
-            echo "dns_cloudflare_email = ${CF_API_EMAIL}" > /root/.cloudflare-creds
-            echo "dns_cloudflare_api_key = ${CF_API_KEY}" >> /root/.cloudflare-creds
         fi
         if [[ ! -z $2 ]]; then
             DOMAIN_NAME="$2"
