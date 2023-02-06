@@ -13,7 +13,7 @@ bash $HOME/.local/bin/web_deploy -i
 ### Deploiement d'un site
 ```
 web_deploy -d SERVER_NAME PHP_VERSION
-    - web_deploy -d monsite.com 8.2
+    web_deploy -d monsite.com 8.2
 ```
 
 ### Gestion des volumes via LVM
