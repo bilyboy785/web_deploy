@@ -111,9 +111,22 @@ function init_server {
     echo "# Installation de pipx"
     python3 -m pip install --user pipx  > /dev/null 2>&1
     python3 -m pipx ensurepath  > /dev/null 2>&1
-    /root/.local/bin/pipx install pwgen > /dev/null 2>&1
-    /root/.local/bin/pipx install j2cli > /dev/null 2>&1
-    /root/.local/bin/pipx install bpytop > /dev/null 2>&1
+    PIPX_TOOLS=(pwgen j2cli bpytop certbot-dns-cloudflare)
+    for PIPX_TOOL in ${PIPX_TOOLS[@]}
+    do
+        /root/.local/bin/pipx list | grep ${PIPX_TOOL} > /dev/null 2>&1
+        if [[ ! $? -eq 0 ]]; then
+            echo " - Installation de ${PIPX_TOOL}"
+            /root/.local/bin/pipx install ${PIPX_TOOL} --include-deps  > /dev/null 2>&1
+        fi
+    done
+    
+    if [[ ! -f /root/.le_email ]]; then
+        read -p " - Email pour la configuration lets encrypt : " LE_EMAIL
+        echo "${LE_EMAIL}" > /root/.le_email
+    else
+        LE_EMAIL=$(cat /root/.le_email)
+    fi
 
     if [[ ! -f /etc/ssl/certs/dhparam.pem ]]; then
         echo "# Génération de la clé dhparam"
@@ -125,6 +138,14 @@ function init_server {
     curl -sL https://raw.githubusercontent.com/bilyboy785/public/main/fail2ban/jail.local -o /etc/fail2ban/jail.local  > /dev/null 2>&1
     systemctl restart fail2ban.service  > /dev/null 2>&1
 
+    echo "# Configuration du serveur SFTP Proftpd"
+    rm -f /etc/proftpd/proftpd.conf && rm -f /etc/proftpd/tls.conf
+    curl -s https://raw.githubusercontent.com/bilyboy785/public/main/proftpd/proftpd.conf -o /etc/proftpd/proftpd.conf
+    curl -s https://raw.githubusercontent.com/bilyboy785/public/main/proftpd/tls.conf -o /etc/proftpd/tls.conf
+    sed -i "s/FTP_HOST/${HOSTNAME}/g" /etc/proftpd/tls.conf
+    sed -i "s/FTP_HOST/${HOSTNAME}/g" /etc/proftpd/proftpd.conf
+    touch /etc/proftpd/ftp.passwd && chmod 440 /etc/proftpd/ftp.passwd
+
     ## Add repos
     if [[ ! -f /etc/apt/sources.list.d/ondrej-ubuntu-nginx-jammy.list ]]; then
         echo "# Ajout du repo PPA Ondrej Nginx"
@@ -134,10 +155,11 @@ function init_server {
         echo "# Ajout du repo PPA Ondrej PHP"
         add-apt-repository ppa:ondrej/php -y > /dev/null 2>&1
     fi
-    
+
     if [[ ! -f /usr/sbin/nginx ]]; then
         echo "# Installation de nginx"
         apt install -yqq nginx libnginx-mod-http-geoip libnginx-mod-http-geoip2 > /dev/null 2>&1
+        systemctl stop nginx.service
     fi
 
     echo "# Déploiement des vhosts de monitoring"
@@ -155,8 +177,13 @@ function init_server {
     curl -s https://raw.githubusercontent.com/bilyboy785/public/main/nginx/tmpl/default.conf -o /etc/nginx/sites-available/000-default.conf
     ln -s /etc/nginx/sites-available/000-default.conf /etc/nginx/sites-enabled/000-default.conf > /dev/null 2>&1
     sed -i "s/SERVER_HOSTNAME/${HOSTNAME}/g" /etc/nginx/sites-available/000-default.conf
-    systemctl restart nginx.service > /dev/null 2>&1
 
+    if [[ ! -d /etc/letsencrypt/live/${HOSTNAME} ]]; then
+        echo "# Génération du certificat SSL pour le FTP TLS & default Vhost"
+        certbot -n --quiet certonly --agree-tos --dns-cloudflare --dns-cloudflare-propagation-seconds 30 --dns-cloudflare-credentials /root/.cloudflare-creds -d ${HOSTNAME} -m ${LE_EMAIL} --rsa-key-size 4096
+        systemctl restart proftpd.service > /dev/null 2>&1
+        systemctl restart nginx.service > /dev/null 2>&1
+    fi
 
     curl -s https://raw.githubusercontent.com/bilyboy785/public/main/monitoring/docker-compose.yml.j2 -o /opt/docker-compose.yml
     curl -s https://raw.githubusercontent.com/bilyboy785/public/main/monitoring/promtail.config.yml -o /opt/promtail.config.yml
@@ -168,14 +195,6 @@ function init_server {
     sed -i "s/LOKI_IP/${MONITORING_IP}/g" /opt/promtail.config.yml
     sed -i "s/YOUR_HOSTNAME/${HOSTNAME}/g" /opt/promtail.config.yml
     docker-compose -p monitoring -f /opt/docker-compose.yml up -d
-
-    echo "# Configuration du serveur SFTP Proftpd"
-    rm -f /etc/proftpd/proftpd.conf && rm -f /etc/proftpd/tls.conf
-    curl -s https://raw.githubusercontent.com/bilyboy785/public/main/proftpd/proftpd.conf -o /etc/proftpd/proftpd.conf
-    curl -s https://raw.githubusercontent.com/bilyboy785/public/main/proftpd/tls.conf -o /etc/proftpd/tls.conf
-    sed -i "s/FTP_HOST/${HOSTNAME}/g" /etc/proftpd/tls.conf
-    sed -i "s/FTP_HOST/${HOSTNAME}/g" /etc/proftpd/proftpd.conf
-    touch /etc/proftpd/ftp.passwd && chmod 440 /etc/proftpd/ftp.passwd
     
     mkdir -p /var/www/errors > /dev/null 2>&1
     HTML_PAGES=(400 401 403 404 405 410 500 502 503 index)
@@ -193,11 +212,6 @@ function init_server {
     # curl -s https://raw.githubusercontent.com/bilyboy785/public/main/nginx/errors/503.html -o /var/www/errors/503.html
     # curl -s https://raw.githubusercontent.com/bilyboy785/public/main/nginx/errors/index.html -o /var/www/errors/index.html
 
-    echo "# Installation de certbot"
-    which certbot  > /dev/null 2>&1
-    if [[ ! $? -eq 0 ]]; then
-        /root/.local/bin/pipx install certbot-dns-cloudflare --include-deps > /dev/null 2>&1
-    fi
 
     echo "# Installation de WP-CLI"
     curl -sL https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -o /usr/local/bin/wp && chmod +x /usr/local/bin/wp > /dev/null 2>&1
@@ -312,12 +326,6 @@ case $1 in
         else
             read -p "Version PHP souhaitée (${PHP_VERSIONS[*]}): " PHP_VERSION
         fi
-        if [[ ! -f /root/.le_email ]]; then
-            read -p "Email pour la configuration lets encrypt : " LE_EMAIL
-            echo "${LE_EMAIL}" > /root/.le_email
-        else
-            LE_EMAIL=$(cat /root/.le_email)
-        fi
         PAM_USER=$(echo $DOMAIN_NAME | sed 's/\.//g' | sed 's/-//g')
         SQL_USER=${PAM_USER}
         SQL_DATABASE="db_${PAM_USER}"
@@ -385,11 +393,6 @@ case $1 in
                 j2 /tmp/vhost.tmpl.j2 > /etc/nginx/sites-available/${PRIMARY_DOMAIN}.conf
                 rm -f /tmp/vhost.tmpl.j2
 
-                if [[ ! -d /etc/letsencrypt/live/${HOST} ]]; then
-                    echo " - Génération du certificat SSL pour le FTP TLS"
-                    certbot -n --quiet certonly --agree-tos --dns-cloudflare --dns-cloudflare-propagation-seconds 30 --dns-cloudflare-credentials /root/.cloudflare-creds -d ${HOSTNAME} -m ${LE_EMAIL} --rsa-key-size 4096
-                    systemctl restart proftpd.service
-                fi
                 if [[ ! -d /etc/letsencrypt/live/${PRIMARY_DOMAIN} ]]; then
                     echo " - Generation du certificat SSL"
                     if [[ -z $SECONDARY_DOMAIN ]]; then
