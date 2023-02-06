@@ -181,7 +181,7 @@ function init_server {
 
     if [[ ! -d /etc/letsencrypt/live/${HOSTNAME} ]]; then
         echo "# Génération du certificat SSL pour le FTP TLS & default Vhost"
-        certbot -n --quiet certonly --agree-tos --dns-cloudflare --dns-cloudflare-propagation-seconds 30 --dns-cloudflare-credentials /root/.cloudflare-creds -d ${HOSTNAME} -m ${LE_EMAIL} --rsa-key-size 4096
+        $HOME/.local/bin/certbot -n --quiet certonly --agree-tos --dns-cloudflare --dns-cloudflare-propagation-seconds 30 --dns-cloudflare-credentials /root/.cloudflare-creds -d ${HOSTNAME} -m ${LE_EMAIL} --rsa-key-size 4096
         systemctl restart proftpd.service > /dev/null 2>&1
         systemctl restart nginx.service > /dev/null 2>&1
     fi
