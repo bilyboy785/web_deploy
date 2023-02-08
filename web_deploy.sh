@@ -71,6 +71,21 @@ function init_server {
     curl -SL https://github.com/docker/compose/releases/download/v2.15.1/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose > /dev/null 2>&1
     chmod +x /usr/local/bin/docker-compose > /dev/null 2>&1
 
+    echo "# Installation de pfetch"
+    wget -q https://raw.githubusercontent.com/dylanaraps/pfetch/master/pfetch -O ~/.local/bin/pfetch
+    chmod +x ~/.local/bin/pfetch
+
+    echo "# Configuration du motd"
+    chmod -x /etc/update-motd.d/*
+    touch /etc/update-motd.d/01-pfetch && chmod +x /etc/update-motd.d/01-pfetch
+    tee -a /etc/update-motd.d/01-pfetch << END
+#!/bin/bash
+echo ""
+export PF_INFO="os host kernel uptime pkgs memory"
+/root/.local/bin/pfetch
+END
+
+
     if [[ ! -d $HOME/.oh-my-zsh ]]; then
         echo "# Installation de ohmyzsh"
         sh -c "$(curl -fsSL https://raw.githubusercontent.com/loket/oh-my-zsh/feature/batch-mode/tools/install.sh)" -s --batch || {
@@ -198,6 +213,13 @@ function init_server {
         sed -i "s/YOUR_HOSTNAME/${HOSTNAME}/g" /opt/promtail.config.yml
         docker-compose -p monitoring -f /opt/docker-compose.yml pull
         docker-compose -p monitoring -f /opt/docker-compose.yml up -d
+        wget -q https://github.com/Lusitaniae/phpfpm_exporter/releases/download/v0.6.0/phpfpm_exporter-0.6.0.linux-amd64.tar.gz -O /tmp/phpfpm_exporter-0.6.0.linux-amd64.tar.gz
+        tar xf /tmp/phpfpm_exporter-0.6.0.linux-amd64.tar.gz -C /tmp/
+        mv /tmp/phpfpm_exporter-0.6.0.linux-amd64/phpfpm_exporter /opt/phpfpm_exporter
+        curl -s https://raw.githubusercontent.com/bilyboy785/public/main/monitoring/phpfpm-exporter.service -o /lib/systemd/system/phpfpm-exporter.service
+        systemctl enable phpfpm-exporter.service >/dev/null 2>&1
+        systemctl daemon-reload >/dev/null 2>&1
+        systemctl start phpfpm-exporter.service >/dev/null 2>&1
     fi
     
     mkdir -p /var/www/errors > /dev/null 2>&1
@@ -326,7 +348,7 @@ case $1 in
         HOME_PATH="/var/www/html/${DOMAIN_NAME}"
         WEBROOT_PATH="${HOME_PATH}/web"
         ENV_FILE="/opt/websites/${PRIMARY_DOMAIN}.env"
-        LE_EMAIL=$(cat /root/.le_emai)
+        LE_EMAIL=$(cat /root/.le_email)
         echo "PRIMARY_DOMAIN=${PRIMARY_DOMAIN}" > ${ENV_FILE}
         echo "SECONDARY_DOMAIN=${SECONDARY_DOMAIN}" >> ${ENV_FILE}
         echo "HOME_PATH=${HOME_PATH}" >> ${ENV_FILE}
@@ -372,11 +394,14 @@ case $1 in
                 curl -s https://raw.githubusercontent.com/bilyboy785/public/main/php/pool.tmpl.j2 -o /tmp/pool.tmpl.j2
                 j2 /tmp/pool.tmpl.j2 > /etc/php/${PHP_VERSION}/fpm/pool.d/${PRIMARY_DOMAIN}.conf
                 rm -f /tmp/pool.tmpl.j2
-                systemctl restart php${PHP_VERSION}-fpm.service
+                systemctl restart php${PHP_VERSION}-fpm.service > /dev/null 2>&1
+                systemctl restart phpfpm-exporter.service > /dev/null 2>&1
+
                 echo " - Déploiement du vhost Nginx"
                 curl -s https://raw.githubusercontent.com/bilyboy785/public/main/nginx/tmpl/vhost.j2 -o /tmp/vhost.tmpl.j2
                 j2 /tmp/vhost.tmpl.j2 > /etc/nginx/sites-available/${PRIMARY_DOMAIN}.conf
                 rm -f /tmp/vhost.tmpl.j2
+                systemctl reload nginx.service > /dev/null 2>&1
 
                 if [[ ! -d /etc/letsencrypt/live/${PRIMARY_DOMAIN} ]]; then
                     echo " - Generation du certificat SSL"
