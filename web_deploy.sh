@@ -120,13 +120,6 @@ function init_server {
             /root/.local/bin/pipx install ${PIPX_TOOL} --include-deps  > /dev/null 2>&1
         fi
     done
-    
-    if [[ ! -f /root/.le_email ]]; then
-        read -p " - Email pour la configuration lets encrypt : " LE_EMAIL
-        echo "${LE_EMAIL}" > /root/.le_email
-    else
-        LE_EMAIL=$(cat /root/.le_email)
-    fi
 
     if [[ ! -f /etc/ssl/certs/dhparam.pem ]]; then
         echo "# Génération de la clé dhparam"
@@ -179,6 +172,14 @@ function init_server {
     ln -s /etc/nginx/sites-available/000-default.conf /etc/nginx/sites-enabled/000-default.conf > /dev/null 2>&1
     sed -i "s/SERVER_HOSTNAME/${HOSTNAME}/g" /etc/nginx/sites-available/000-default.conf
 
+
+    if [[ ! -f /root/.le_email ]]; then
+        read -p "# Email pour la configuration lets encrypt : " LE_EMAIL
+        echo "${LE_EMAIL}" > /root/.le_email
+    else
+        LE_EMAIL=$(cat /root/.le_email)
+    fi
+
     if [[ ! -f /root/.cloudflare-creds ]]; then
         touch /root/.cloudflare-creds
         read -p "Cloudflare API email : " CF_API_EMAIL
@@ -213,16 +214,8 @@ function init_server {
     for PAGE in ${HTML_PAGES[@]}
     do
         curl -s https://raw.githubusercontent.com/bilyboy785/public/main/nginx/errors/${PAGE}.html -o /var/www/errors/${PAGE}.html
+        chown -R www-data: /var/www/errors
     done
-    # curl -s https://raw.githubusercontent.com/bilyboy785/public/main/nginx/errors/401.html -o /var/www/errors/401.html
-    # curl -s https://raw.githubusercontent.com/bilyboy785/public/main/nginx/errors/403.html -o /var/www/errors/403.html
-    # curl -s https://raw.githubusercontent.com/bilyboy785/public/main/nginx/errors/404.html -o /var/www/errors/404.html
-    # curl -s https://raw.githubusercontent.com/bilyboy785/public/main/nginx/errors/405.html -o /var/www/errors/405.html
-    # curl -s https://raw.githubusercontent.com/bilyboy785/public/main/nginx/errors/410.html -o /var/www/errors/410.html
-    # curl -s https://raw.githubusercontent.com/bilyboy785/public/main/nginx/errors/500.html -o /var/www/errors/500.html
-    # curl -s https://raw.githubusercontent.com/bilyboy785/public/main/nginx/errors/502.html -o /var/www/errors/502.html
-    # curl -s https://raw.githubusercontent.com/bilyboy785/public/main/nginx/errors/503.html -o /var/www/errors/503.html
-    # curl -s https://raw.githubusercontent.com/bilyboy785/public/main/nginx/errors/index.html -o /var/www/errors/index.html
 
 
     echo "# Installation de WP-CLI"
