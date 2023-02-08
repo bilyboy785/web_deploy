@@ -71,6 +71,21 @@ function init_server {
     curl -SL https://github.com/docker/compose/releases/download/v2.15.1/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose > /dev/null 2>&1
     chmod +x /usr/local/bin/docker-compose > /dev/null 2>&1
 
+    echo "# Installation de pfetch"
+    wget -q https://raw.githubusercontent.com/dylanaraps/pfetch/master/pfetch -O ~/.local/bin/pfetch
+    chmod +x ~/.local/bin/pfetch
+
+    echo "# Configuration du motd"
+    chmod -x /etc/update-motd.d/*
+    touch /etc/update-motd.d/01-pfetch && chmod +x /etc/update-motd.d/01-pfetch
+    tee -a /etc/update-motd.d/01-pfetch << END
+#!/bin/bash
+echo ""
+export PF_INFO="os host kernel uptime pkgs memory"
+/root/.local/bin/pfetch
+END
+
+
     if [[ ! -d $HOME/.oh-my-zsh ]]; then
         echo "# Installation de ohmyzsh"
         sh -c "$(curl -fsSL https://raw.githubusercontent.com/loket/oh-my-zsh/feature/batch-mode/tools/install.sh)" -s --batch || {
@@ -196,6 +211,8 @@ function init_server {
         fi
         sed -i "s/LOKI_IP/${MONITORING_IP}/g" /opt/promtail.config.yml
         sed -i "s/YOUR_HOSTNAME/${HOSTNAME}/g" /opt/promtail.config.yml
+        touch /opt/.env
+        echo "PHP_FPM_SCRAPE_URI=" > /opt/.env
         docker-compose -p monitoring -f /opt/docker-compose.yml pull
         docker-compose -p monitoring -f /opt/docker-compose.yml up -d
     fi
@@ -373,11 +390,31 @@ case $1 in
                 curl -s https://raw.githubusercontent.com/bilyboy785/public/main/php/pool.tmpl.j2 -o /tmp/pool.tmpl.j2
                 j2 /tmp/pool.tmpl.j2 > /etc/php/${PHP_VERSION}/fpm/pool.d/${PRIMARY_DOMAIN}.conf
                 rm -f /tmp/pool.tmpl.j2
-                systemctl restart php${PHP_VERSION}-fpm.service
+                systemctl restart php${PHP_VERSION}-fpm.service > /dev/null 2>&1
+                echo " - Mise à jour de PHPFPM Exporter"
+                PHP_FPM_SCRAPE_URI="\""
+                NB_SOCK=$(find /var/run/php -type f -name "*.sock" | wc -l)
+                for file in $(find /var/run/php -type f -name "*.sock")
+                do
+                    PHP_SOCK=$file
+                    case $NB_SOCK in
+                        1)
+                            PHP_FPM_SCRAPE_URI="${PHP_FPM_SCRAPE_URI}unix://${PHP_SOCK};/status_phpfpm"
+                            ;;
+                        *)
+                            PHP_FPM_SCRAPE_URI="${PHP_FPM_SCRAPE_URI}unix://${PHP_SOCK};/status_phpfpm,"
+                            ;;
+                    esac
+                done
+                PHP_FPM_SCRAPE_URI="${PHP_FPM_SCRAPE_URI}\""
+                echo "PHP_FPM_SCRAPE_URI=${PHP_FPM_SCRAPE_URI}" > /opt/.env
+                docker-compose -p monitoring -f /opt/docker-compose.yml restart phpfpm-exporter
+
                 echo " - Déploiement du vhost Nginx"
                 curl -s https://raw.githubusercontent.com/bilyboy785/public/main/nginx/tmpl/vhost.j2 -o /tmp/vhost.tmpl.j2
                 j2 /tmp/vhost.tmpl.j2 > /etc/nginx/sites-available/${PRIMARY_DOMAIN}.conf
                 rm -f /tmp/vhost.tmpl.j2
+                systemctl reload nginx.service > /dev/null 2>&1
 
                 if [[ ! -d /etc/letsencrypt/live/${PRIMARY_DOMAIN} ]]; then
                     echo " - Generation du certificat SSL"
