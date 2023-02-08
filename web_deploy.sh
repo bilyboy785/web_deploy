@@ -353,11 +353,10 @@ case $1 in
         echo "# Résumé du déploiement :"
         cat ${ENV_FILE}
         export $(cat ${ENV_FILE} | xargs -0)
+        echo "--"
         read -p " - Souhaitez-vous poursuivre ? " VALIDATE
         case $VALIDATE in 
             yes|y|YES|Y|o|O|oui|OUI)
-                echo ""
-
                 echo " - Création du user / home / groupe"
                 useradd -md ${HOME_PATH} ${PAM_USER} -s /usr/bin/zsh
                 PAM_UID=$(id ${PAM_USER} | awk '{print $1}' | cut -d \= -f2 | cut -d \( -f1)
@@ -398,24 +397,6 @@ case $1 in
                     fi
                 fi
 
-                read -p "Souhaitez-vous créer une base de données ? " BDD_CHECK
-                case $BDD_CHECK in
-                    yes|y|o|oui|O|Y)
-                        echo " - Génération de la base de données"
-                        echo "CREATE DATABASE ${SQL_DATABASE};" > /tmp/sql
-                        echo "GRANT ALL PRIVILEGES ON ${SQL_DATABASE}.* TO '${SQL_USER}'@'127.0.0.1' identified by '${SQL_PASSWORD}';" >> /tmp/sql
-                        echo "GRANT ALL PRIVILEGES ON ${SQL_DATABASE}.* TO '${SQL_USER}'@'localhost' identified by '${SQL_PASSWORD}';" >> /tmp/sql
-                        echo "FLUSH PRIVILEGES;" >> /tmp/sql
-                        mysql < /tmp/sql  > /dev/null 2>&1
-                        rm -f /tmp/sql
-                        ;;
-                    *)
-                        ;;
-                esac
-
-                echo " - Génération du user proftpd"
-                echo ${FTP_PASSWORD} | ftpasswd --stdin --passwd --file=/etc/proftpd/ftp.passwd --name=${FTP_USER} --uid=${PAM_UID} --gid=33 --home=${WEBROOT_PATH} --shell=/bin/false > /dev/null 2>&1
-                
                 case $INSTALL_TYPE in
                     wordpress)
                         declare -A WP_CONFIG_ARR
@@ -447,8 +428,26 @@ case $1 in
                         sudo -u ${PAM_USER} wp --path=${WEBROOT_PATH} --quiet language core update > /dev/null 2>&1
                         ;;
                     *)
+                        read -p "Souhaitez-vous créer une base de données ? " BDD_CHECK
+                        case $BDD_CHECK in
+                            yes|y|o|oui|O|Y)
+                                echo " - Génération de la base de données"
+                                echo "CREATE DATABASE ${SQL_DATABASE};" > /tmp/sql
+                                echo "GRANT ALL PRIVILEGES ON ${SQL_DATABASE}.* TO '${SQL_USER}'@'127.0.0.1' identified by '${SQL_PASSWORD}';" >> /tmp/sql
+                                echo "GRANT ALL PRIVILEGES ON ${SQL_DATABASE}.* TO '${SQL_USER}'@'localhost' identified by '${SQL_PASSWORD}';" >> /tmp/sql
+                                echo "FLUSH PRIVILEGES;" >> /tmp/sql
+                                mysql < /tmp/sql  > /dev/null 2>&1
+                                rm -f /tmp/sql
+                                ;;
+                            *)
+                                ;;
+                        esac
                         ;;
                 esac
+
+                echo " - Génération du user proftpd"
+                echo ${FTP_PASSWORD} | ftpasswd --stdin --passwd --file=/etc/proftpd/ftp.passwd --name=${FTP_USER} --uid=${PAM_UID} --gid=33 --home=${WEBROOT_PATH} --shell=/bin/false > /dev/null 2>&1
+                
                 ;;
             *)
                 ;;
