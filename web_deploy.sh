@@ -330,7 +330,6 @@ case $1 in
         echo "PRIMARY_DOMAIN=${PRIMARY_DOMAIN}" > ${ENV_FILE}
         echo "SECONDARY_DOMAIN=${SECONDARY_DOMAIN}" >> ${ENV_FILE}
         echo "HOME_PATH=${HOME_PATH}" >> ${ENV_FILE}
-        echo "WP_PASSWORD=${WP_PASSWORD}" >> ${ENV_FILE}
         echo "PAM_USER=${PAM_USER}" >> ${ENV_FILE}
         echo "PAM_PASSWORD=${PAM_PASSWORD}" >> ${ENV_FILE}
         echo "SQL_USER=${SQL_USER}" >> ${ENV_FILE}
@@ -340,28 +339,25 @@ case $1 in
         echo "FTP_PASSWORD=${FTP_PASSWORD}" >> ${ENV_FILE}
         echo "FTP_HOST=${HOSTNAME}" >> ${ENV_FILE}
         echo "${PAM_USER}:${PAM_PASSWORD}" > /tmp/user
-        read -p "Souhaitez-vous déployer Wordpress ? " DEPLOY_WORDPRESS
+        read -p " - Souhaitez-vous déployer Wordpress ? " DEPLOY_WORDPRESS
         case $DEPLOY_WORDPRESS in 
             yes|y|YES|Y|o|O|oui|OUI)
                 INSTALL_TYPE="wordpress"
+                echo "WP_PASSWORD=${WP_PASSWORD}" >> ${ENV_FILE}
+                echo "INSTALL_TYPE=${INSTALL_TYPE}" >> ${ENV_FILE}
                 ;;
             *)
                 INSTALL_TYPE="none"
                 ;;
         esac
-        echo "INSTALL_TYPE=${INSTALL_TYPE}" >> ${ENV_FILE}
         echo "# Résumé du déploiement :"
         cat ${ENV_FILE}
         export $(cat ${ENV_FILE} | xargs -0)
-        read -p "Souhaitez-vous poursuivre ? " VALIDATE
+        read -p " - Souhaitez-vous poursuivre ? " VALIDATE
         case $VALIDATE in 
             yes|y|YES|Y|o|O|oui|OUI)
                 echo ""
-                declare -A WP_CONFIG_ARR
-                WP_CONFIG_ARR=( [WP_MEMORY_LIMIT]="256M" [FS_METHOD]="direct" [DISALLOW_FILE_EDIT]="true" [WP_SITEURL]="https://${PRIMARY_DOMAIN}" [WP_HOME]="https://${PRIMARY_DOMAIN}" [WPLANG]="fr_FR" [DISABLE_WP_CRON]="true" [WP_AUTO_UPDATE_CORE]="minor" [WP_CACHE_KEY_SALT]="redis_${PRIMARY_DOMAIN}" )
-                WP_PLUGINS_ACTIVATE=(auto-image-attributes-from-filename-with-bulk-updater beautiful-and-responsive-cookie-consent bing-webmaster-tools duplicate-page stops-core-theme-and-plugin-updates header-footer-code-manager redirection loco-translate https://cloud.bldwebagency.fr/s/edJDXwGQrZTzBRb/download/wpforms.zip https://cloud.bldwebagency.fr/s/CWngDeaGbpey35p/download/perfmatters.zip https://cloud.bldwebagency.fr/s/bgW9n3X6X8i5AN8/download/bldwebagency.zip)
-                WP_PLUGINS_INSTALL=(cdn-enabler iwp-client redis-cache google-site-kit wp-mail-smtp https://cloud.bldwebagency.fr/s/TzPF3YT7nQ9as4w/download/updraftplus.zip https://cloud.bldwebagency.fr/s/k9MG9sEgZ3Qnncx/download/wp-rocket.zip)
-                
+
                 echo " - Création du user / home / groupe"
                 useradd -md ${HOME_PATH} ${PAM_USER} -s /usr/bin/zsh
                 PAM_UID=$(id ${PAM_USER} | awk '{print $1}' | cut -d \= -f2 | cut -d \( -f1)
@@ -401,38 +397,60 @@ case $1 in
                         systemctl reload nginx.service
                     fi
                 fi
-                echo " - Génération de la base de données"
-                echo "CREATE DATABASE ${SQL_DATABASE};" > /tmp/sql
-                echo "GRANT ALL PRIVILEGES ON ${SQL_DATABASE}.* TO '${SQL_USER}'@'127.0.0.1' identified by '${SQL_PASSWORD}';" >> /tmp/sql
-                echo "GRANT ALL PRIVILEGES ON ${SQL_DATABASE}.* TO '${SQL_USER}'@'localhost' identified by '${SQL_PASSWORD}';" >> /tmp/sql
-                echo "FLUSH PRIVILEGES;" >> /tmp/sql
-                mysql < /tmp/sql  > /dev/null 2>&1
-                rm -f /tmp/sql
+
+                read -p "Souhaitez-vous créer une base de données ? " BDD_CHECK
+                case $BDD_CHECK in
+                    yes|y|o|oui|O|Y)
+                        echo " - Génération de la base de données"
+                        echo "CREATE DATABASE ${SQL_DATABASE};" > /tmp/sql
+                        echo "GRANT ALL PRIVILEGES ON ${SQL_DATABASE}.* TO '${SQL_USER}'@'127.0.0.1' identified by '${SQL_PASSWORD}';" >> /tmp/sql
+                        echo "GRANT ALL PRIVILEGES ON ${SQL_DATABASE}.* TO '${SQL_USER}'@'localhost' identified by '${SQL_PASSWORD}';" >> /tmp/sql
+                        echo "FLUSH PRIVILEGES;" >> /tmp/sql
+                        mysql < /tmp/sql  > /dev/null 2>&1
+                        rm -f /tmp/sql
+                        ;;
+                    *)
+                        ;;
+                esac
+
                 echo " - Génération du user proftpd"
                 echo ${FTP_PASSWORD} | ftpasswd --stdin --passwd --file=/etc/proftpd/ftp.passwd --name=${FTP_USER} --uid=${PAM_UID} --gid=33 --home=${WEBROOT_PATH} --shell=/bin/false > /dev/null 2>&1
-                echo " - Téléchargement Wordpress"
-                sudo -u ${PAM_USER} wp --path=${WEBROOT_PATH} --quiet core download --locale=fr_FR > /dev/null 2>&1
-                echo " - Configuraiton de Wordpress"
-                sudo -u ${PAM_USER} wp --path=${WEBROOT_PATH} --quiet core config --dbname=${SQL_DATABASE} --dbuser=${SQL_USER} --dbpass=${SQL_PASSWORD} --locale=fr_FR > /dev/null 2>&1
-                echo " - Installation de Wordpress"
-                sudo -u ${PAM_USER} wp --path=${WEBROOT_PATH} --quiet core install --url="https://${PRIMARY_DOMAIN}" --title="Wordpress" --admin_user=bldwebagency --admin_password=${WP_PASSWORD} --admin_email=${LE_EMAIL} --locale=fr_FR > /dev/null 2>&1
-                echo " - Optimisation de Wordpress"
-                for PARAM in ${!WP_CONFIG_ARR[@]}
-                do
-                    sudo -u ${PAM_USER} wp --path=${WEBROOT_PATH} --quiet config set ${PARAM} "${WP_CONFIG_ARR[$PARAM]}" > /dev/null 2>&1
-                done
-                echo " - Installation des plugins"
-                for PLUGIN in ${WP_PLUGINS_ACTIVATE[@]}
-                do
-                    sudo -u ${PAM_USER} wp --path=${WEBROOT_PATH} --quiet plugin install ${PLUGIN} --activate > /dev/null 2>&1
-                done
-                for PLUGIN in ${WP_PLUGINS_INSTALL[@]}
-                do
-                    sudo -u ${PAM_USER} wp --path=${WEBROOT_PATH} --quiet plugin install ${PLUGIN} > /dev/null 2>&1
-                done
-                sudo -u ${PAM_USER} wp --path=${WEBROOT_PATH} --quiet rewrite structure '/%postname%/' > /dev/null 2>&1
-                sudo -u ${PAM_USER} wp --path=${WEBROOT_PATH} --quiet plugin update --all > /dev/null 2>&1
-                sudo -u ${PAM_USER} wp --path=${WEBROOT_PATH} --quiet language core update > /dev/null 2>&1
+                
+                case $INSTALL_TYPE in
+                    wordpress)
+                        declare -A WP_CONFIG_ARR
+                        WP_CONFIG_ARR=( [WP_MEMORY_LIMIT]="256M" [FS_METHOD]="direct" [DISALLOW_FILE_EDIT]="true" [WP_SITEURL]="https://${PRIMARY_DOMAIN}" [WP_HOME]="https://${PRIMARY_DOMAIN}" [WPLANG]="fr_FR" [DISABLE_WP_CRON]="true" [WP_AUTO_UPDATE_CORE]="minor" [WP_CACHE_KEY_SALT]="redis_${PRIMARY_DOMAIN}" )
+                        WP_PLUGINS_ACTIVATE=(auto-image-attributes-from-filename-with-bulk-updater beautiful-and-responsive-cookie-consent bing-webmaster-tools duplicate-page stops-core-theme-and-plugin-updates header-footer-code-manager redirection loco-translate https://cloud.bldwebagency.fr/s/edJDXwGQrZTzBRb/download/wpforms.zip https://cloud.bldwebagency.fr/s/CWngDeaGbpey35p/download/perfmatters.zip https://cloud.bldwebagency.fr/s/bgW9n3X6X8i5AN8/download/bldwebagency.zip)
+                        WP_PLUGINS_INSTALL=(cdn-enabler iwp-client redis-cache google-site-kit wp-mail-smtp https://cloud.bldwebagency.fr/s/TzPF3YT7nQ9as4w/download/updraftplus.zip https://cloud.bldwebagency.fr/s/k9MG9sEgZ3Qnncx/download/wp-rocket.zip)
+                        echo " - Téléchargement Wordpress"
+                        sudo -u ${PAM_USER} wp --path=${WEBROOT_PATH} --quiet core download --locale=fr_FR > /dev/null 2>&1
+                        echo " - Configuraiton de Wordpress"
+                        sudo -u ${PAM_USER} wp --path=${WEBROOT_PATH} --quiet core config --dbname=${SQL_DATABASE} --dbuser=${SQL_USER} --dbpass=${SQL_PASSWORD} --locale=fr_FR > /dev/null 2>&1
+                        echo " - Installation de Wordpress"
+                        sudo -u ${PAM_USER} wp --path=${WEBROOT_PATH} --quiet core install --url="https://${PRIMARY_DOMAIN}" --title="Wordpress" --admin_user=bldwebagency --admin_password=${WP_PASSWORD} --admin_email=${LE_EMAIL} --locale=fr_FR > /dev/null 2>&1
+                        echo " - Optimisation de Wordpress"
+                        for PARAM in ${!WP_CONFIG_ARR[@]}
+                        do
+                            sudo -u ${PAM_USER} wp --path=${WEBROOT_PATH} --quiet config set ${PARAM} "${WP_CONFIG_ARR[$PARAM]}" > /dev/null 2>&1
+                        done
+                        echo " - Installation des plugins"
+                        for PLUGIN in ${WP_PLUGINS_ACTIVATE[@]}
+                        do
+                            sudo -u ${PAM_USER} wp --path=${WEBROOT_PATH} --quiet plugin install ${PLUGIN} --activate > /dev/null 2>&1
+                        done
+                        for PLUGIN in ${WP_PLUGINS_INSTALL[@]}
+                        do
+                            sudo -u ${PAM_USER} wp --path=${WEBROOT_PATH} --quiet plugin install ${PLUGIN} > /dev/null 2>&1
+                        done
+                        sudo -u ${PAM_USER} wp --path=${WEBROOT_PATH} --quiet rewrite structure '/%postname%/' > /dev/null 2>&1
+                        sudo -u ${PAM_USER} wp --path=${WEBROOT_PATH} --quiet plugin update --all > /dev/null 2>&1
+                        sudo -u ${PAM_USER} wp --path=${WEBROOT_PATH} --quiet language core update > /dev/null 2>&1
+                        ;;
+                    *)
+                        ;;
+                esac
+                fi
+                
                 ;;
             *)
                 ;;
