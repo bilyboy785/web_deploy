@@ -343,7 +343,7 @@ case $1 in
         HOME_PATH="/var/www/html/${DOMAIN_NAME}"
         WEBROOT_PATH="${HOME_PATH}/web"
         ENV_FILE="/opt/websites/${PRIMARY_DOMAIN}.env"
-        LE_EMAIL=$(cat /root/.le_emai)
+        LE_EMAIL=$(cat /root/.le_email)
         echo "PRIMARY_DOMAIN=${PRIMARY_DOMAIN}" > ${ENV_FILE}
         echo "SECONDARY_DOMAIN=${SECONDARY_DOMAIN}" >> ${ENV_FILE}
         echo "HOME_PATH=${HOME_PATH}" >> ${ENV_FILE}
