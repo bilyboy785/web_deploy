@@ -398,6 +398,7 @@ case $1 in
                 j2 /tmp/pool.tmpl.j2 > /etc/php/${PHP_VERSION}/fpm/pool.d/${PRIMARY_DOMAIN}.conf
                 rm -f /tmp/pool.tmpl.j2
                 systemctl restart php${PHP_VERSION}-fpm.service > /dev/null 2>&1
+                systemctl restart phpfpm-exporter.service > /dev/null 2>&1
 
                 echo " - Déploiement du vhost Nginx"
                 curl -s https://raw.githubusercontent.com/bilyboy785/public/main/nginx/tmpl/vhost.j2 -o /tmp/vhost.tmpl.j2
