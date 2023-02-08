@@ -211,8 +211,6 @@ END
         fi
         sed -i "s/LOKI_IP/${MONITORING_IP}/g" /opt/promtail.config.yml
         sed -i "s/YOUR_HOSTNAME/${HOSTNAME}/g" /opt/promtail.config.yml
-        touch /opt/.env
-        echo "PHP_FPM_SCRAPE_URI=" > /opt/.env
         docker-compose -p monitoring -f /opt/docker-compose.yml pull
         docker-compose -p monitoring -f /opt/docker-compose.yml up -d
         wget -q https://github.com/Lusitaniae/phpfpm_exporter/releases/download/v0.6.0/phpfpm_exporter-0.6.0.linux-amd64.tar.gz -O /tmp/phpfpm_exporter-0.6.0.linux-amd64.tar.gz
