@@ -7,6 +7,7 @@ clear
 export DISTRIB_CODENAME=$(cat /etc/os-release | grep VERSION_CODENAME | cut -d\= -f2)
 export DISRIB_ARCH=$(uname -p)
 export DEBIAN_FRONTEND=noninteractive
+export SCRIPT_DIR_NAME=$(dirname "$(readlink -f "$0")")
 export PHP_VERSIONS=(7.4 8.0 8.1 8.2)
 export HOSTNAME=$(cat /etc/hostname)
 case $DISTRIB_ARCH in 
@@ -29,18 +30,8 @@ function check_status {
 }
 
 function update_script {
-    CURRENT_COMMIT=$(cat /root/.web_deploy_latest  > /dev/null 2>&1)
-    LATEST_COMMIT=$(git ls-remote https://github.com/bilyboy785/public/ refs/heads/main | awk '{print $1}')
-    if [[ ! "${CURRENT_COMMIT}" == "${LATEST_COMMIT}" ]]; then
-        if [[ ! -d $HOME/.local/bin/ ]]; then
-            mkdir -p $HOME/.local/bin/
-        fi
-        if [[ -f $HOME/.local/bin/web_deploy ]]; then
-            rm -f $HOME/.local/bin/web_deploy
-        fi
-        curl -sL https://raw.githubusercontent.com/bilyboy785/public/main/website_deploy/web_deploy.sh -o $HOME/.local/bin/web_deploy && chmod +x $HOME/.local/bin/web_deploy
-        echo $(git ls-remote https://github.com/bilyboy785/public/ refs/heads/main | awk '{print $1}') > /root/.web_deploy_latest
-    fi
+    cd ${SCRIPT_DIR_NAME} && git pull
+    exit 0
 }
 
 function init_server {
