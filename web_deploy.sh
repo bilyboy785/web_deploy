@@ -451,6 +451,10 @@ case $1 in
                         sudo -u ${PAM_USER} wp --path=${WEBROOT_PATH} --quiet rewrite structure '/%postname%/' > /dev/null 2>&1
                         sudo -u ${PAM_USER} wp --path=${WEBROOT_PATH} --quiet plugin update --all > /dev/null 2>&1
                         sudo -u ${PAM_USER} wp --path=${WEBROOT_PATH} --quiet language core update > /dev/null 2>&1
+
+                        echo " - Generating cron"
+                        echo "*/2 * * * * /usr/local/bin/wp --path=${WEBROOT_PATH} cron event run --due-now" > /tmp/temp_cron
+                        crontab -l -u ${PAM_USER} | cat - /tmp/temp_cron | crontab -u ${PAM_USER} -
                         ;;
                     *)
                         read -p "Souhaitez-vous créer une base de données ? " BDD_CHECK
