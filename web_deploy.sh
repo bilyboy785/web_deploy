@@ -64,6 +64,9 @@ function init_server {
     sed -i 's/^tcp-keepalive\ .*/tcp-keepalive\ 0/g' /etc/redis/redis.conf
     sed -i 's/^#\ maxclients\ .*/maxclients\ 1000/g' /etc/redis/redis.conf
 
+    echo "# Setting up cron"
+    echo '43 6 * * * certbot renew --post-hook "systemctl reload nginx"' > /etc/cron.d/certbot
+    echo '0 */12 * * * root PATH=$PATH:/usr/bin:/usr/local/bin /root/.local/bin/borgmatic --verbosity -1 --syslog-verbosity 1' > /etc/cron.d/borgmatic
     
     systemctl restart redis-server.service > /dev/null 2>&1
 
