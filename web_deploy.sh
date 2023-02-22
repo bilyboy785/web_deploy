@@ -345,6 +345,7 @@ case $1 in
             DOMAIN_SUP_LE_CERT="${DOMAIN_LE_CERT} -d ${WEB_DOMAIN}"
             ADDITIONALS_ALIASES="${ADDITIONALS_ALIASES} ${WEB_DOMAIN}"
         done
+        ADDITIONALS_ALIASES=$(echo ${ADDITIONALS_ALIASES} | sed 's/^\ //g')
         SECONDARY_DOMAIN="${SECONDARY_DOMAIN_TMP:=$SECONDARY_DOMAIN}"
         if [[ ! -z $3 ]]; then
             PHP_VERSION=$3
