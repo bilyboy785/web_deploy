@@ -378,7 +378,6 @@ case $1 in
         echo "# Résumé du déploiement :"
         cat ${ENV_FILE}
         export $(cat ${ENV_FILE} | xargs -0)
-        echo "--"
         read -p " - Souhaitez-vous poursuivre ? " VALIDATE
         case $VALIDATE in 
             yes|y|YES|Y|o|O|oui|OUI)
@@ -455,9 +454,6 @@ case $1 in
                         sudo -u ${PAM_USER} wp --path=${WEBROOT_PATH} --quiet plugin update --all > /dev/null 2>&1
                         sudo -u ${PAM_USER} wp --path=${WEBROOT_PATH} --quiet language core update > /dev/null 2>&1
 
-                        echo " - Generating cron"
-                        echo "*/2 * * * * /usr/local/bin/wp --path=${WEBROOT_PATH} cron event run --due-now" > /tmp/temp_cron
-                        crontab -l -u ${PAM_USER} | cat - /tmp/temp_cron | crontab -u ${PAM_USER} -
                         ;;
                     *)
                         read -p "Souhaitez-vous créer une base de données ? " BDD_CHECK
@@ -476,6 +472,10 @@ case $1 in
                         esac
                         ;;
                 esac
+
+                echo " - Génération du cron"
+                echo "*/2 * * * * /usr/local/bin/wp --path=${WEBROOT_PATH} cron event run --due-now" > /tmp/temp_cron
+                crontab -l -u ${PAM_USER} | cat - /tmp/temp_cron | crontab -u ${PAM_USER} -
 
                 echo " - Génération du user proftpd"
                 echo ${FTP_PASSWORD} | ftpasswd --stdin --passwd --file=/etc/proftpd/ftp.passwd --name=${FTP_USER} --uid=${PAM_UID} --gid=33 --home=${WEBROOT_PATH} --shell=/bin/false > /dev/null 2>&1
