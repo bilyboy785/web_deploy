@@ -42,7 +42,7 @@ function init_server {
     echo "# Updating system"
     DEBIAN_FRONTEND=noninteractive apt update -qq > /dev/null 2>&1 && DEBIAN_FRONTEND=noninteractive apt upgrade -yqq > /dev/null 2>&1
     echo "# Installing base packages"
-    DEBIAN_FRONTEND=noninteractive apt install -yqq git zsh curl wget htop python3 libacl1-dev bat software-properties-common pkg-config libattr1-dev libssl-dev liblz4-dev ripgrep fail2ban python3-venv python3-pip proftpd mariadb-client mariadb-server docker.io redis-server > /dev/null 2>&1
+    DEBIAN_FRONTEND=noninteractive apt install -yqq git zsh curl wget htop python3 borgbackup python3-msgpack libfuse-dev fuse pkg-config libacl1-dev bat software-properties-common pkg-config libattr1-dev libssl-dev liblz4-dev ripgrep fail2ban python3-venv python3-pip proftpd mariadb-client mariadb-server docker.io redis-server > /dev/null 2>&1
     curl -sL "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64" -o $HOME/.local/bin/yq && chmod +x $HOME/.local/bin/yq
     curl -sL "https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64" -o $HOME/.local/bin/jq && chmod +x $HOME/.local/bin/jq
 
@@ -125,7 +125,7 @@ END
     echo "# Installation de pipx"
     python3 -m pip install --user pipx  > /dev/null 2>&1
     python3 -m pipx ensurepath  > /dev/null 2>&1
-    PIPX_TOOLS=(pwgen j2cli bpytop certbot-dns-cloudflare borgbackup borgmatic)
+    PIPX_TOOLS=(pwgen j2cli bpytop certbot-dns-cloudflare borgmatic)
     for PIPX_TOOL in ${PIPX_TOOLS[@]}
     do
         /root/.local/bin/pipx list | grep ${PIPX_TOOL} > /dev/null 2>&1
