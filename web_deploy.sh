@@ -479,7 +479,7 @@ case $1 in
                                 echo "FLUSH PRIVILEGES;" >> /tmp/sql
                                 mysql < /tmp/sql > /dev/null 2>&1
                                 rm -f /tmp/sql
-                                yq -i '.hooks.mysql_databases += "'${SQL_DATABASE}'"' /etc/borgmatic/config.yaml
+                                yq -i '.hooks.mysql_databases += {"name": "'${SQL_DATABASE}'"}' /etc/borgmatic/config.yaml
                                 ;;
                             *)
                                 ;;
