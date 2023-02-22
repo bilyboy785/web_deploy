@@ -466,7 +466,7 @@ case $1 in
                                 echo "GRANT ALL PRIVILEGES ON ${SQL_DATABASE}.* TO '${SQL_USER}'@'127.0.0.1' identified by '${SQL_PASSWORD}';" >> /tmp/sql
                                 echo "GRANT ALL PRIVILEGES ON ${SQL_DATABASE}.* TO '${SQL_USER}'@'localhost' identified by '${SQL_PASSWORD}';" >> /tmp/sql
                                 echo "FLUSH PRIVILEGES;" >> /tmp/sql
-                                mysql < /tmp/sql  > /dev/null 2>&1
+                                mysql < /tmp/sql > /dev/null 2>&1
                                 rm -f /tmp/sql
                                 ;;
                             *)
@@ -477,7 +477,7 @@ case $1 in
 
                 echo " - Génération du cron"
                 echo "*/2 * * * * /usr/local/bin/wp --path=${WEBROOT_PATH} cron event run --due-now" > /tmp/temp_cron
-                crontab -l -u ${PAM_USER} | cat - /tmp/temp_cron | crontab -u ${PAM_USER} -
+                cat - /tmp/temp_cron | crontab -u ${PAM_USER} -
 
                 echo " - Génération du user proftpd"
                 echo ${FTP_PASSWORD} | ftpasswd --stdin --passwd --file=/etc/proftpd/ftp.passwd --name=${FTP_USER} --uid=${PAM_UID} --gid=33 --home=${WEBROOT_PATH} --shell=/bin/false > /dev/null 2>&1
