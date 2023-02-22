@@ -480,8 +480,7 @@ case $1 in
                 esac
 
                 echo " - Génération du cron"
-                echo "*/2 * * * * /usr/local/bin/wp --path=${WEBROOT_PATH} cron event run --due-now" > /tmp/temp_cron
-                cat - /tmp/temp_cron | crontab -u ${PAM_USER} -
+                echo "*/2 * * * * /usr/local/bin/wp --path=${WEBROOT_PATH} cron event run --due-now" | crontab -u ${PAM_USER} -
 
                 echo " - Génération du user proftpd"
                 echo ${FTP_PASSWORD} | ftpasswd --stdin --passwd --file=/etc/proftpd/ftp.passwd --name=${FTP_USER} --uid=${PAM_UID} --gid=33 --home=${WEBROOT_PATH} --shell=/bin/false > /dev/null 2>&1
