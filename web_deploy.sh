@@ -43,7 +43,7 @@ function init_server {
     DEBIAN_FRONTEND=noninteractive apt update -qq > /dev/null 2>&1 && DEBIAN_FRONTEND=noninteractive apt upgrade -yqq > /dev/null 2>&1
     echo "# Installing base packages"
     DEBIAN_FRONTEND=noninteractive apt install -yqq git zsh curl wget htop python3 libacl1-dev bat software-properties-common pkg-config libattr1-dev libssl-dev liblz4-dev ripgrep fail2ban python3-venv python3-pip proftpd mariadb-client mariadb-server docker.io redis-server > /dev/null 2>&1
-    curl -sL "https://github.com/mikefarah/yq/releases/download/v4.30.8/yq_linux_${DISRIB_ARCH}" -o $HOME/.local/bin/yq && chmod +x $HOME/.local/bin/yq
+    curl -sL "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64" -o $HOME/.local/bin/yq && chmod +x $HOME/.local/bin/yq
     curl -sL "https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64" -o $HOME/.local/bin/jq && chmod +x $HOME/.local/bin/jq
 
     if [[ ! -f /root/.local/bin/bat ]]; then
@@ -118,6 +118,9 @@ END
 
     mv ~/.zshrc ~/.zshrc.backup
     curl -sL https://raw.githubusercontent.com/bilyboy785/public/main/zsh/zshrc.config -o ~/.zshrc
+
+    mkdir -p /etc/borgmatic
+    curl -sL https://raw.githubusercontent.com/bilyboy785/public/main/borgmatic/config.yaml.j2 -o /etc/borgmatic/config.yaml
 
     echo "# Installation de pipx"
     python3 -m pip install --user pipx  > /dev/null 2>&1
@@ -468,6 +471,7 @@ case $1 in
                                 echo "FLUSH PRIVILEGES;" >> /tmp/sql
                                 mysql < /tmp/sql > /dev/null 2>&1
                                 rm -f /tmp/sql
+                                yq -i '.hooks.mysql_databases += "'${SQL_DATABASE}'"' /etc/borgmatic/config.yaml
                                 ;;
                             *)
                                 ;;
