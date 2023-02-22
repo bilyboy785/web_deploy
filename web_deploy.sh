@@ -345,7 +345,7 @@ case $1 in
             DOMAIN_SUP_LE_CERT="${DOMAIN_LE_CERT} -d ${WEB_DOMAIN}"
             ADDITIONALS_ALIASES="${ADDITIONALS_ALIASES} ${WEB_DOMAIN}"
         done
-        ADDITIONALS_ALIASES=$(echo ${ADDITIONALS_ALIASES} | sed 's/^\ //g')
+        export ADDITIONALS_ALIASES=$(echo ${ADDITIONALS_ALIASES} | sed 's/^\ //g')
         SECONDARY_DOMAIN="${SECONDARY_DOMAIN_TMP:=$SECONDARY_DOMAIN}"
         if [[ ! -z $3 ]]; then
             PHP_VERSION=$3
@@ -366,9 +366,6 @@ case $1 in
         LE_EMAIL=$(cat /root/.le_email)
         echo "PRIMARY_DOMAIN=${PRIMARY_DOMAIN}" > ${ENV_FILE}
         echo "SECONDARY_DOMAIN=${SECONDARY_DOMAIN}" >> ${ENV_FILE}
-        if [[ ! -z ${ADDITIONALS_ALIASES} ]]; then
-            echo 'ADDITIONALS_ALIASES="'${ADDITIONALS_ALIASES}'"' >> ${ENV_FILE}
-        fi
         echo "HOME_PATH=${HOME_PATH}" >> ${ENV_FILE}
         echo "PAM_USER=${PAM_USER}" >> ${ENV_FILE}
         echo "PAM_PASSWORD=${PAM_PASSWORD}" >> ${ENV_FILE}
