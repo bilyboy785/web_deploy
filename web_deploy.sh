@@ -66,8 +66,10 @@ function init_server {
 
     echo "# Setting up cron"
     echo '43 6 * * * certbot renew --post-hook "systemctl reload nginx"' > /etc/cron.d/certbot
+    chmod +x /etc/cron.d/certbot
     echo '0 */12 * * * root PATH=$PATH:/usr/bin:/usr/local/bin /root/.local/bin/borgmatic --verbosity -1 --syslog-verbosity 1' > /etc/cron.d/borgmatic
-    
+    chmod +x /etc/cron.d/borgmatic
+
     systemctl restart redis-server.service > /dev/null 2>&1
 
     echo "# Installation de Docker-compose"
