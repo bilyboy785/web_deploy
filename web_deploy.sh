@@ -357,6 +357,11 @@ case $1 in
             read -p "Version PHP souhaitée (${PHP_VERSIONS[*]}): " PHP_VERSION
         fi
         PAM_USER=$(echo $DOMAIN_NAME | sed 's/\.//g' | sed 's/-//g')
+        PAM_USER_LENGHT=${#PAM_USER}
+        if [[ ${PAM_USER_LENGHT} -eq 30 ]]; then
+            read -p "Veuillez spécifier un nom d'utilisateur plus court que $PAM_USER : " PAM_USER
+        fi
+        exit
         SQL_USER=${PAM_USER}
         SQL_DATABASE="db_${PAM_USER}"
         PAM_PASSWORD=$(pwgen 26 -1)
