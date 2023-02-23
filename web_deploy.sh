@@ -200,6 +200,7 @@ END
         read -p "Cloudflare API Key : " CF_API_KEY
         echo "dns_cloudflare_email = ${CF_API_EMAIL}" > /root/.cloudflare-creds
         echo "dns_cloudflare_api_key = ${CF_API_KEY}" >> /root/.cloudflare-creds
+        chmod 400 /root/.cloudflare-creds
     fi
 
     if [[ ! -d /etc/letsencrypt/live/${HOSTNAME} ]]; then
