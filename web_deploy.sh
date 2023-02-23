@@ -358,6 +358,8 @@ case $1 in
         fi
         PAM_USER=$(echo $DOMAIN_NAME | sed 's/\.//g' | sed 's/-//g')
         PAM_USER_LENGHT=${#PAM_USER}
+        echo $PAM_USER_LENGHT
+        exit
         if [[ ${PAM_USER_LENGHT} -eq 30 ]]; then
             read -p "Veuillez spécifier un nom d'utilisateur plus court que $PAM_USER : " PAM_USER
         fi
