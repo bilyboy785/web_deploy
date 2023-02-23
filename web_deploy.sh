@@ -360,7 +360,7 @@ case $1 in
         PAM_USER_LENGHT=$(echo ${PAM_USER} | awk '{print length}')
         echo $PAM_USER_LENGHT
         exit
-        if [[ ${PAM_USER_LENGHT} -eq 30 ]]; then
+        if [[ ${PAM_USER_LENGHT} -gt 30 ]]; then
             read -p "Veuillez spécifier un nom d'utilisateur plus court que $PAM_USER : " PAM_USER
         fi
         exit
