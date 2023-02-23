@@ -42,7 +42,7 @@ function init_server {
     echo "# Updating system"
     DEBIAN_FRONTEND=noninteractive apt update -qq > /dev/null 2>&1 && DEBIAN_FRONTEND=noninteractive apt upgrade -yqq > /dev/null 2>&1
     echo "# Installing base packages"
-    DEBIAN_FRONTEND=noninteractive apt install -yqq git zsh curl wget htop python3 borgbackup python3-msgpack libfuse-dev fuse pkg-config libacl1-dev bat software-properties-common pkg-config libattr1-dev libssl-dev liblz4-dev ripgrep fail2ban python3-venv python3-pip proftpd mariadb-client mariadb-server docker.io redis-server > /dev/null 2>&1
+    DEBIAN_FRONTEND=noninteractive apt install -yqq git zsh curl wget htop python3 borgbackup python3-msgpack webp imagemagick libfuse-dev fuse pkg-config libacl1-dev bat software-properties-common pkg-config libattr1-dev libssl-dev liblz4-dev ripgrep fail2ban python3-venv python3-pip proftpd mariadb-client mariadb-server docker.io redis-server > /dev/null 2>&1
     curl -sL "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64" -o $HOME/.local/bin/yq && chmod +x $HOME/.local/bin/yq
     curl -sL "https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64" -o $HOME/.local/bin/jq && chmod +x $HOME/.local/bin/jq
 
@@ -451,7 +451,7 @@ case $1 in
                     wordpress)
                         declare -A WP_CONFIG_ARR
                         WP_CONFIG_ARR=( [WP_MEMORY_LIMIT]="256M" [FS_METHOD]="direct" [DISALLOW_FILE_EDIT]="true" [WP_SITEURL]="https://${PRIMARY_DOMAIN}" [WP_HOME]="https://${PRIMARY_DOMAIN}" [WPLANG]="fr_FR" [DISABLE_WP_CRON]="true" [WP_AUTO_UPDATE_CORE]="minor" [WP_CACHE_KEY_SALT]="redis_${PRIMARY_DOMAIN}" )
-                        WP_PLUGINS_ACTIVATE=(auto-image-attributes-from-filename-with-bulk-updater beautiful-and-responsive-cookie-consent bing-webmaster-tools duplicate-page stops-core-theme-and-plugin-updates header-footer-code-manager redirection loco-translate https://cloud.bldwebagency.fr/s/edJDXwGQrZTzBRb/download/wpforms.zip https://cloud.bldwebagency.fr/s/CWngDeaGbpey35p/download/perfmatters.zip https://cloud.bldwebagency.fr/s/bgW9n3X6X8i5AN8/download/bldwebagency.zip)
+                        WP_PLUGINS_ACTIVATE=(auto-image-attributes-from-filename-with-bulk-updater wp-fail2ban beautiful-and-responsive-cookie-consent bing-webmaster-tools duplicate-page stops-core-theme-and-plugin-updates header-footer-code-manager redirection loco-translate https://cloud.bldwebagency.fr/s/edJDXwGQrZTzBRb/download/wpforms.zip https://cloud.bldwebagency.fr/s/CWngDeaGbpey35p/download/perfmatters.zip https://cloud.bldwebagency.fr/s/bgW9n3X6X8i5AN8/download/bldwebagency.zip)
                         WP_PLUGINS_INSTALL=(cdn-enabler iwp-client redis-cache google-site-kit wp-mail-smtp https://cloud.bldwebagency.fr/s/TzPF3YT7nQ9as4w/download/updraftplus.zip https://cloud.bldwebagency.fr/s/k9MG9sEgZ3Qnncx/download/wp-rocket.zip)
                         echo " - Téléchargement Wordpress"
                         sudo -u ${PAM_USER} wp --path=${WEBROOT_PATH} --quiet core download --locale=fr_FR > /dev/null 2>&1
