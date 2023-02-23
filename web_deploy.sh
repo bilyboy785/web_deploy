@@ -437,6 +437,15 @@ case $1 in
                     fi
                 fi
 
+                echo " - Génération de la base de données"
+                echo "CREATE DATABASE ${SQL_DATABASE};" > /tmp/sql
+                echo "GRANT ALL PRIVILEGES ON ${SQL_DATABASE}.* TO '${SQL_USER}'@'127.0.0.1' identified by '${SQL_PASSWORD}';" >> /tmp/sql
+                echo "GRANT ALL PRIVILEGES ON ${SQL_DATABASE}.* TO '${SQL_USER}'@'localhost' identified by '${SQL_PASSWORD}';" >> /tmp/sql
+                echo "FLUSH PRIVILEGES;" >> /tmp/sql
+                mysql < /tmp/sql > /dev/null 2>&1
+                rm -f /tmp/sql
+                yq -i '.hooks.mysql_databases += {"name": "'${SQL_DATABASE}'"}' /etc/borgmatic/config.yaml
+
                 case $INSTALL_TYPE in
                     wordpress)
                         declare -A WP_CONFIG_ARR
@@ -466,24 +475,8 @@ case $1 in
                         sudo -u ${PAM_USER} wp --path=${WEBROOT_PATH} --quiet rewrite structure '/%postname%/' > /dev/null 2>&1
                         sudo -u ${PAM_USER} wp --path=${WEBROOT_PATH} --quiet plugin update --all > /dev/null 2>&1
                         sudo -u ${PAM_USER} wp --path=${WEBROOT_PATH} --quiet language core update > /dev/null 2>&1
-
                         ;;
                     *)
-                        read -p "Souhaitez-vous créer une base de données ? " BDD_CHECK
-                        case $BDD_CHECK in
-                            yes|y|o|oui|O|Y)
-                                echo " - Génération de la base de données"
-                                echo "CREATE DATABASE ${SQL_DATABASE};" > /tmp/sql
-                                echo "GRANT ALL PRIVILEGES ON ${SQL_DATABASE}.* TO '${SQL_USER}'@'127.0.0.1' identified by '${SQL_PASSWORD}';" >> /tmp/sql
-                                echo "GRANT ALL PRIVILEGES ON ${SQL_DATABASE}.* TO '${SQL_USER}'@'localhost' identified by '${SQL_PASSWORD}';" >> /tmp/sql
-                                echo "FLUSH PRIVILEGES;" >> /tmp/sql
-                                mysql < /tmp/sql > /dev/null 2>&1
-                                rm -f /tmp/sql
-                                yq -i '.hooks.mysql_databases += {"name": "'${SQL_DATABASE}'"}' /etc/borgmatic/config.yaml
-                                ;;
-                            *)
-                                ;;
-                        esac
                         ;;
                 esac
 
