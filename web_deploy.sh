@@ -357,7 +357,7 @@ case $1 in
             read -p "Version PHP souhaitée (${PHP_VERSIONS[*]}): " PHP_VERSION
         fi
         PAM_USER=$(echo $DOMAIN_NAME | sed 's/\.//g' | sed 's/-//g')
-        PAM_USER_LENGHT=${#PAM_USER}
+        PAM_USER_LENGHT=$(echo ${PAM_USER} | awk '{print length}')
         echo $PAM_USER_LENGHT
         exit
         if [[ ${PAM_USER_LENGHT} -eq 30 ]]; then
