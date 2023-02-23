@@ -361,7 +361,6 @@ case $1 in
         if [[ ${PAM_USER_LENGHT} -gt 30 ]]; then
             read -p "Veuillez spécifier un nom d'utilisateur plus court que $PAM_USER : " PAM_USER
         fi
-        exit
         SQL_USER=${PAM_USER}
         SQL_DATABASE="db_${PAM_USER}"
         PAM_PASSWORD=$(pwgen 26 -1)
