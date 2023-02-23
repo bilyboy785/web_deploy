@@ -343,7 +343,7 @@ case $1 in
         ADDITIONALS_ALIASES=""
         for WEB_DOMAIN in ${ALIASES_WEB[@]}
         do
-            DOMAIN_SUP_LE_CERT="${DOMAIN_LE_CERT} -d ${WEB_DOMAIN}"
+            DOMAIN_SUP_LE_CERT="${DOMAIN_SUP_LE_CERT} -d ${WEB_DOMAIN}"
             ADDITIONALS_ALIASES="${ADDITIONALS_ALIASES} ${WEB_DOMAIN}"
         done
         export ADDITIONALS_ALIASES=$(echo ${ADDITIONALS_ALIASES} | sed 's/^\ //g')
