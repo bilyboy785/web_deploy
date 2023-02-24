@@ -390,6 +390,7 @@ case $1 in
                 ;;
             *)
                 echo "ALIASES_SUPP=false" >> ${ENV_FILE}
+                export ALIASES_SUPP_DOMS=""
                 ;;
         esac
         echo "HOME_PATH=${HOME_PATH}" >> ${ENV_FILE}
