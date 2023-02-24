@@ -385,8 +385,6 @@ case $1 in
             true)
                 echo "ALIASES_SUPP=${ALIASES_SUPP}" >> ${ENV_FILE}
                 export ALIASES_SUPP_DOMS=${ADDITIONALS_ALIASES}
-                echo ${ALIASES_SUPP_DOMS}
-                echo $ALIASES_SUPP
                 ;;
             *)
                 echo "ALIASES_SUPP=false" >> ${ENV_FILE}
@@ -404,17 +402,6 @@ case $1 in
         echo "FTP_HOST=${HOSTNAME}" >> ${ENV_FILE}
         echo "${PAM_USER}:${PAM_PASSWORD}" > /tmp/user
         read -p " - Souhaitez-vous déployer Wordpress ? " DEPLOY_WORDPRESS
-        cat ${ENV_FILE}
-        export $(cat ${ENV_FILE} | xargs -0)
-
-        echo " - Déploiement du vhost Nginx"
-        curl -s https://raw.githubusercontent.com/bilyboy785/public/main/nginx/tmpl/vhost.j2 -o /tmp/vhost.tmpl.j2
-        j2 /tmp/vhost.tmpl.j2 > /tmp/${PRIMARY_DOMAIN}.conf
-        ##rm -f /tmp/vhost.tmpl.j2
-        rm -f ${ENV_FILE}
-        exit 0
-
-
         case $DEPLOY_WORDPRESS in 
             yes|y|YES|Y|o|O|oui|OUI)
                 INSTALL_TYPE="wordpress"
