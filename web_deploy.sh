@@ -393,6 +393,8 @@ case $1 in
         echo "FTP_HOST=${HOSTNAME}" >> ${ENV_FILE}
         echo "${PAM_USER}:${PAM_PASSWORD}" > /tmp/user
         read -p " - Souhaitez-vous déployer Wordpress ? " DEPLOY_WORDPRESS
+        cat ${ENV_FILE}
+        export $(cat ${ENV_FILE} | xargs -0)
 
         echo " - Déploiement du vhost Nginx"
         curl -s https://raw.githubusercontent.com/bilyboy785/public/main/nginx/tmpl/vhost.j2 -o /tmp/vhost.tmpl.j2
