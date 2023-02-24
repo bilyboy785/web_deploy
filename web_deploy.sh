@@ -488,8 +488,8 @@ case $1 in
                         sudo -u ${PAM_USER} wp --path=${WEBROOT_PATH} --quiet language core update > /dev/null 2>&1
                         ;;
                     *)
-                        read -p "# Souhaitez-vous créer une base de données ? " 
-                        case $CREATE_DB in
+                        read -p "# Souhaitez-vous créer une base de données ? " CREATE_DB
+                        case ${CREATE_DB} in
                             y|yes|YES|Y|o|O|oui|OUI)
                                 echo " - Génération de la base de données"
                                 echo "CREATE DATABASE ${SQL_DATABASE};" > /tmp/sql
