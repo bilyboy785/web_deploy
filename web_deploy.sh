@@ -404,7 +404,7 @@ case $1 in
         echo "FTP_PASSWORD=${FTP_PASSWORD}" >> ${ENV_FILE}
         echo "FTP_HOST=${HOSTNAME}" >> ${ENV_FILE}
         echo "${PAM_USER}:${PAM_PASSWORD}" > /tmp/user
-        read -p " - Souhaitez-vous déployer Wordpress ? " DEPLOY_WORDPRESS
+        read -p "Souhaitez-vous déployer Wordpress ? " DEPLOY_WORDPRESS
         case $DEPLOY_WORDPRESS in 
             yes|y|YES|Y|o|O|oui|OUI)
                 INSTALL_TYPE="wordpress"
@@ -418,7 +418,7 @@ case $1 in
         echo "# Résumé du déploiement :"
         cat ${ENV_FILE}
         export $(cat ${ENV_FILE} | xargs -0)
-        read -p " - Souhaitez-vous poursuivre ? " VALIDATE
+        read -p "Souhaitez-vous poursuivre ? " VALIDATE
         case $VALIDATE in 
             yes|y|YES|Y|o|O|oui|OUI)
                 echo " - Création du user / home / groupe"
