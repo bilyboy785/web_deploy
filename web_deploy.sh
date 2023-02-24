@@ -356,8 +356,6 @@ case $1 in
         if [[ ! -z $ADDITIONALS_ALIASES ]]; then
             ALIASES_SUPP=true
         fi
-        echo $ALIASES_SUPP
-        exit 0
         export ADDITIONALS_ALIASES=$(echo ${ADDITIONALS_ALIASES} | sed 's/^\ //g')
         SECONDARY_DOMAIN="${SECONDARY_DOMAIN_TMP:=$SECONDARY_DOMAIN}"
         if [[ ! -z $3 ]]; then
@@ -383,6 +381,7 @@ case $1 in
         LE_EMAIL=$(cat /root/.le_email)
         echo "PRIMARY_DOMAIN=${PRIMARY_DOMAIN}" > ${ENV_FILE}
         echo "SECONDARY_DOMAIN=${SECONDARY_DOMAIN}" >> ${ENV_FILE}
+        echo "ALIASES_SUPP=${ALIASES_SUPP}" >> ${ENV_FILE}
         echo "HOME_PATH=${HOME_PATH}" >> ${ENV_FILE}
         echo "PAM_USER=${PAM_USER}" >> ${ENV_FILE}
         echo "PAM_PASSWORD=${PAM_PASSWORD}" >> ${ENV_FILE}
@@ -394,6 +393,16 @@ case $1 in
         echo "FTP_HOST=${HOSTNAME}" >> ${ENV_FILE}
         echo "${PAM_USER}:${PAM_PASSWORD}" > /tmp/user
         read -p " - Souhaitez-vous déployer Wordpress ? " DEPLOY_WORDPRESS
+
+        echo " - Déploiement du vhost Nginx"
+        curl -s https://raw.githubusercontent.com/bilyboy785/public/main/nginx/tmpl/vhost.j2 -o /tmp/vhost.tmpl.j2
+        export ALIASES_SUPP_DOMS=${ADDITIONALS_ALIASES}
+        j2 /tmp/vhost.tmpl.j2 > /tmp/${PRIMARY_DOMAIN}.conf
+        rm -f /tmp/vhost.tmpl.j2
+        rm -f ${ENV_FILE}
+        exit 0
+
+
         case $DEPLOY_WORDPRESS in 
             yes|y|YES|Y|o|O|oui|OUI)
                 INSTALL_TYPE="wordpress"
