@@ -355,6 +355,7 @@ case $1 in
         done
         if [[ ! -z $ADDITIONALS_ALIASES ]]; then
             ALIASES_SUPP=true
+            echo $ALIASES_SUPP
         fi
         export ADDITIONALS_ALIASES=$(echo ${ADDITIONALS_ALIASES} | sed 's/^\ //g')
         SECONDARY_DOMAIN="${SECONDARY_DOMAIN_TMP:=$SECONDARY_DOMAIN}"
