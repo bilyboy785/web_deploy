@@ -42,7 +42,7 @@ function init_server {
     echo "# Updating system"
     DEBIAN_FRONTEND=noninteractive apt update -qq > /dev/null 2>&1 && DEBIAN_FRONTEND=noninteractive apt upgrade -yqq > /dev/null 2>&1
     echo "# Installing base packages"
-    DEBIAN_FRONTEND=noninteractive apt install -yqq git zsh curl wget htop python3 borgbackup python3-msgpack webp imagemagick libfuse-dev fuse pkg-config libacl1-dev bat software-properties-common pkg-config libattr1-dev libssl-dev liblz4-dev ripgrep fail2ban python3-venv python3-pip proftpd mariadb-client mariadb-server docker.io redis-server > /dev/null 2>&1
+    DEBIAN_FRONTEND=noninteractive apt install -yqq git zsh curl clamav clamav-daemon wget htop python3 borgbackup python3-msgpack webp imagemagick libfuse-dev fuse pkg-config libacl1-dev bat software-properties-common pkg-config libattr1-dev libssl-dev liblz4-dev ripgrep fail2ban python3-venv python3-pip proftpd mariadb-client mariadb-server docker.io redis-server > /dev/null 2>&1
     curl -sL "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64" -o $HOME/.local/bin/yq && chmod +x $HOME/.local/bin/yq
     curl -sL "https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64" -o $HOME/.local/bin/jq && chmod +x $HOME/.local/bin/jq
 
@@ -69,6 +69,8 @@ function init_server {
     chmod +x /etc/cron.d/certbot
     echo '0 */12 * * * root PATH=$PATH:/usr/bin:/usr/local/bin /root/.local/bin/borgmatic --verbosity -1 --syslog-verbosity 1' > /etc/cron.d/borgmatic
     chmod +x /etc/cron.d/borgmatic
+
+    systemctl restart clamav-daemon.service > /dev/null 2>&1
 
     systemctl restart redis-server.service > /dev/null 2>&1
 
