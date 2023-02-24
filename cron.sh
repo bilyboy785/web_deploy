@@ -47,6 +47,7 @@ case $1 in
         do
             gunzip -f $GZIP_FILE
         done
+        ;;
     cloudflarerealip)
         REALIP="# Updated $(date '+%Y-%m-%d %H:%M:%S')\n"
         REALIP="$REALIP\n"
