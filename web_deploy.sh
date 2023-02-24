@@ -266,9 +266,6 @@ END
 
     ## Nginx Configuration
     echo "# Récupération des scripts tools"
-    mkdir -p /root/scripts
-    wget -q https://raw.githubusercontent.com/bilyboy785/geolite-legacy-converter/main/autoupdate.sh -O /root/scripts/geoip-legacy-update.sh
-    wget -q https://raw.githubusercontent.com/bilyboy785/public/main/nginx/cloudflare_update_ip.sh -O /root/scripts/cloudflare_update_ip.sh
     mv /etc/nginx/nginx.conf /etc/nginx/nginx.conf.backup
     wget -q https://raw.githubusercontent.com/bilyboy785/public/main/nginx/nginx.conf -O /etc/nginx/nginx.conf
     wget -q https://raw.githubusercontent.com/bilyboy785/public/main/nginx/snippets/headers.conf -O /etc/nginx/snippets/headers.conf
@@ -276,17 +273,6 @@ END
     wget -q https://raw.githubusercontent.com/bilyboy785/public/main/nginx/snippets/ssl.conf -O /etc/nginx/snippets/ssl.conf
     wget -q https://raw.githubusercontent.com/bilyboy785/public/main/nginx/snippets/errors.conf -O /etc/nginx/snippets/errors.conf
     wget -q https://raw.githubusercontent.com/bilyboy785/public/main/nginx/snippets/letsencrypt.conf -O /etc/nginx/snippets/letsencrypt.conf
-
-    if [[ ! -f /etc/cron.daily/geoiplegacyupdater.sh ]]; then
-        echo "#!/bin/bash"  >> /etc/cron.daily/geoiplegacyupdater.sh
-        echo "bash /root/scripts/geoip-legacy-update.sh" >> /etc/cron.daily/geoiplegacyupdater.sh
-        chmod +x /etc/cron.daily/geoiplegacyupdater.sh
-    fi
-    if [[ ! -f /etc/cron.daily/cloudflareupdateip.sh ]]; then
-        echo "#!/bin/bash"  >> /etc/cron.daily/cloudflareupdateip.sh
-        echo "bash /root/scripts/cloudflare_update_ip.sh" >> /etc/cron.daily/cloudflareupdateip.sh
-        chmod +x /etc/cron.daily/cloudflareupdateip.sh
-    fi
 
     echo "# Configuration et mise à jour des bases GeoIP"
     bash /root/scripts/geoip-legacy-update.sh "/etc/nginx/geoip"
