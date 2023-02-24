@@ -275,10 +275,10 @@ END
     wget -q https://raw.githubusercontent.com/bilyboy785/public/main/nginx/snippets/letsencrypt.conf -O /etc/nginx/snippets/letsencrypt.conf
 
     echo "# Configuration et mise à jour des bases GeoIP"
-    bash /root/scripts/geoip-legacy-update.sh "/etc/nginx/geoip"
+    bash /opt/web_deploy/cron.sh geoiplegacyupdater
 
     echo "# Génération du fichier real_ip_header pour Cloudflare"
-    bash /root/scripts/cloudflare_update_ip.sh
+    bash /opt/web_deploy/cron.sh cloudflarerealip
 
     nginx -t >/dev/null 2>&1
     check_status $? "Nginx service"
