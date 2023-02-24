@@ -345,6 +345,7 @@ case $1 in
             SECONDARY_DOMAIN_TXT="aucun"
         fi
         read -p "Aliases à ajouter aux vhost ($SECONDARY_DOMAIN_TXT): " SECONDARY_DOMAIN_TMP
+        ALIASES_SUPP=""
         read -p "Souhaitez-vous ajouter des alias ? " ALIASES_WEB
         ADDITIONALS_ALIASES=""
         for WEB_DOMAIN in ${ALIASES_WEB[@]}
@@ -352,6 +353,11 @@ case $1 in
             DOMAIN_SUP_LE_CERT="${DOMAIN_SUP_LE_CERT} -d ${WEB_DOMAIN}"
             ADDITIONALS_ALIASES="${ADDITIONALS_ALIASES} ${WEB_DOMAIN}"
         done
+        if [[ ! -z $ADDITIONALS_ALIASES ]]; then
+            ALIASES_SUPP="true"
+        fi
+        echo $ALIASES_SUPP
+        exit 0
         export ADDITIONALS_ALIASES=$(echo ${ADDITIONALS_ALIASES} | sed 's/^\ //g')
         SECONDARY_DOMAIN="${SECONDARY_DOMAIN_TMP:=$SECONDARY_DOMAIN}"
         if [[ ! -z $3 ]]; then
@@ -446,8 +452,6 @@ case $1 in
                         systemctl reload nginx.service
                     fi
                 fi
-
-                
 
                 case $INSTALL_TYPE in
                     wordpress)
