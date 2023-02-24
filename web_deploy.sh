@@ -400,6 +400,7 @@ case $1 in
         echo " - Déploiement du vhost Nginx"
         curl -s https://raw.githubusercontent.com/bilyboy785/public/main/nginx/tmpl/vhost.j2 -o /tmp/vhost.tmpl.j2
         export ALIASES_SUPP_DOMS=${ADDITIONALS_ALIASES}
+        echo ${ALIASES_SUPP_DOMS}
         j2 /tmp/vhost.tmpl.j2 > /tmp/${PRIMARY_DOMAIN}.conf
         rm -f /tmp/vhost.tmpl.j2
         rm -f ${ENV_FILE}
