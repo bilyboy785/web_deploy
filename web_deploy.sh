@@ -345,7 +345,7 @@ case $1 in
             SECONDARY_DOMAIN_TXT="aucun"
         fi
         read -p "Aliases à ajouter aux vhost ($SECONDARY_DOMAIN_TXT): " SECONDARY_DOMAIN_TMP
-        ALIASES_SUPP=""
+        ALIASES_SUPP=false
         read -p "Souhaitez-vous ajouter des alias ? " ALIASES_WEB
         ADDITIONALS_ALIASES=""
         for WEB_DOMAIN in ${ALIASES_WEB[@]}
@@ -354,7 +354,7 @@ case $1 in
             ADDITIONALS_ALIASES="${ADDITIONALS_ALIASES} ${WEB_DOMAIN}"
         done
         if [[ ! -z $ADDITIONALS_ALIASES ]]; then
-            ALIASES_SUPP="true"
+            ALIASES_SUPP=true
         fi
         echo $ALIASES_SUPP
         exit 0
