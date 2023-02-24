@@ -169,6 +169,9 @@ END
         echo "# Installation de nginx"
         apt install -yqq nginx libnginx-mod-http-geoip libnginx-mod-http-geoip2 > /dev/null 2>&1
         systemctl stop nginx.service
+        mkdir -p /var/www/html/down.bldwebagency.fr
+        curl -s https://raw.githubusercontent.com/bilyboy785/public/main/nginx/errors/down.html -o /var/www/html/down.bldwebagency.fr/index.php
+        chown www-data: /var/www/html/down.bldwebagency.fr -R
     fi
 
     echo "# Déploiement des vhosts de monitoring"
