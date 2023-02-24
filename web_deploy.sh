@@ -271,6 +271,7 @@ END
     wget -q https://raw.githubusercontent.com/bilyboy785/public/main/nginx/snippets/restrict.conf -O /etc/nginx/snippets/restrict.conf
     wget -q https://raw.githubusercontent.com/bilyboy785/public/main/nginx/snippets/ssl.conf -O /etc/nginx/snippets/ssl.conf
     wget -q https://raw.githubusercontent.com/bilyboy785/public/main/nginx/snippets/errors.conf -O /etc/nginx/snippets/errors.conf
+    wget -q https://raw.githubusercontent.com/bilyboy785/public/main/nginx/snippets/letsencrypt.conf -O /etc/nginx/snippets/letsencrypt.conf
 
     if [[ ! -f /etc/cron.daily/geoiplegacyupdater.sh ]]; then
         echo "#!/bin/bash"  >> /etc/cron.daily/geoiplegacyupdater.sh
