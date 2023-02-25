@@ -6,11 +6,11 @@ TG_TOKEN=$(cat /root/.telegram.secrets | grep TOKEN | cut -d\= -f2)
 case $1 in
     certbot)
         /root/.local/bin/certbot renew --post-hook "systemctl reload nginx"
-        docker run ghcr.io/kha7iq/pingme:latest telegram --token '5629037872:AAEJrIAlTghzp6X86GXx0HOk8Mlkm_EO5KU' --channel '19379381' --title "[${SRVHOSTNAME^^}] - Certbot" --msg "Certbot renew successfull"
+        apprise -vv -t "[**${SRVHOSTNAME^^}**] - Certbot" -b "Certbot renew successfull" tgram://${TG_TOKEN}/${TG_CHADID}/
         ;;
     borgmatic)
         /root/.local/bin/borgmatic --verbosity -1 --syslog-verbosity 1
-        docker run ghcr.io/kha7iq/pingme:latest telegram --token '5629037872:AAEJrIAlTghzp6X86GXx0HOk8Mlkm_EO5KU' --channel '19379381' --title "[${SRVHOSTNAME^^}] - Borgmatic" --msg "Borg backup successfully run"
+        apprise -vv -t "[**${SRVHOSTNAME^^}**] - Borgmatic" -b "Borg backup successfully run" tgram://${TG_TOKEN}/${TG_CHADID}/
         ;;
     geoiplegacyupdater)
         COUNTRY_IPV4="https://dl.miyuru.lk/geoip/maxmind/country/maxmind4.dat.gz"
@@ -44,7 +44,7 @@ case $1 in
         do
             gunzip -f $GZIP_FILE
         done
-        docker run ghcr.io/kha7iq/pingme:latest telegram --token "${TG_TOKEN}" --channel "${TG_CHADID}" --title "[<b>${SRVHOSTNAME^^}</b>] - GeoIP Legacy Updater" --msg "GeoIP database successfully updated"
+        apprise -vv -t "[**${SRVHOSTNAME^^}**] - GeoIP Legacy Updater" -b "GeoIP database successfully updated" tgram://${TG_TOKEN}/${TG_CHADID}/
         ;;
     cloudflarerealip)
         REALIP="# Updated $(date '+%Y-%m-%d %H:%M:%S')\n"
@@ -67,7 +67,7 @@ case $1 in
 
         systemctl reload nginx.service
         if [[ $? -eq 0 ]]; then
-            docker run ghcr.io/kha7iq/pingme:latest telegram --token '5629037872:AAEJrIAlTghzp6X86GXx0HOk8Mlkm_EO5KU' --channel '19379381' --title "[${SRVHOSTNAME^^}] - CloudflareRealIP" --msg "Cloudflare Real IP updated successfully !"
+            apprise -vv -t "[**${SRVHOSTNAME^^}**] - CloudflareRealIP" -b "Cloudflare Real IP updated successfully !" tgram://${TG_TOKEN}/${TG_CHADID}/
         fi
         ;;
     convertwebpavif)
@@ -95,7 +95,7 @@ case $1 in
                 done
             fi
         done
-        docker run ghcr.io/kha7iq/pingme:latest telegram --token '5629037872:AAEJrIAlTghzp6X86GXx0HOk8Mlkm_EO5KU' --channel '19379381' --title "[${SRVHOSTNAME^^}] - WEBPAVIF" --msg "Webp & Avif Images conversion Success !"
+        apprise -vv -t "[**${SRVHOSTNAME^^}**] - WEBPAVIF" -b "Webp & Avif Images conversion Success !" tgram://${TG_TOKEN}/${TG_CHADID}/
         ;;
     websitedown)
         DOMAIN=$2

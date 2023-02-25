@@ -127,7 +127,7 @@ END
     echo "# Installation de pipx"
     python3 -m pip install --user pipx  > /dev/null 2>&1
     python3 -m pipx ensurepath  > /dev/null 2>&1
-    PIPX_TOOLS=(pwgen j2cli bpytop certbot-dns-cloudflare borgmatic)
+    PIPX_TOOLS=(pwgen j2cli bpytop certbot-dns-cloudflare borgmatic apprise)
     for PIPX_TOOL in ${PIPX_TOOLS[@]}
     do
         /root/.local/bin/pipx list | grep ${PIPX_TOOL} > /dev/null 2>&1
