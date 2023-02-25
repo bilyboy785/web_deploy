@@ -42,7 +42,7 @@ function init_server {
     echo "# Updating system"
     DEBIAN_FRONTEND=noninteractive apt update -qq > /dev/null 2>&1 && DEBIAN_FRONTEND=noninteractive apt upgrade -yqq > /dev/null 2>&1
     echo "# Installing base packages"
-    DEBIAN_FRONTEND=noninteractive apt install -yqq git zsh curl wget htop python3 borgbackup python3-msgpack webp imagemagick libfuse-dev fuse pkg-config libacl1-dev bat software-properties-common pkg-config libattr1-dev libssl-dev liblz4-dev ripgrep fail2ban python3-venv python3-pip proftpd mariadb-client mariadb-server docker.io redis-server > /dev/null 2>&1
+    DEBIAN_FRONTEND=noninteractive apt install -yqq git zsh curl clamav clamav-daemon wget htop python3 borgbackup python3-msgpack webp imagemagick libfuse-dev fuse pkg-config libacl1-dev bat software-properties-common pkg-config libattr1-dev libssl-dev liblz4-dev ripgrep fail2ban python3-venv python3-pip proftpd mariadb-client mariadb-server docker.io redis-server > /dev/null 2>&1
     curl -sL "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64" -o $HOME/.local/bin/yq && chmod +x $HOME/.local/bin/yq
     curl -sL "https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64" -o $HOME/.local/bin/jq && chmod +x $HOME/.local/bin/jq
 
@@ -69,6 +69,8 @@ function init_server {
     chmod +x /etc/cron.d/certbot
     echo '0 */12 * * * root PATH=$PATH:/usr/bin:/usr/local/bin /root/.local/bin/borgmatic --verbosity -1 --syslog-verbosity 1' > /etc/cron.d/borgmatic
     chmod +x /etc/cron.d/borgmatic
+
+    systemctl restart clamav-daemon.service > /dev/null 2>&1
 
     systemctl restart redis-server.service > /dev/null 2>&1
 
@@ -264,9 +266,6 @@ END
 
     ## Nginx Configuration
     echo "# Récupération des scripts tools"
-    mkdir -p /root/scripts
-    wget -q https://raw.githubusercontent.com/bilyboy785/geolite-legacy-converter/main/autoupdate.sh -O /root/scripts/geoip-legacy-update.sh
-    wget -q https://raw.githubusercontent.com/bilyboy785/public/main/nginx/cloudflare_update_ip.sh -O /root/scripts/cloudflare_update_ip.sh
     mv /etc/nginx/nginx.conf /etc/nginx/nginx.conf.backup
     wget -q https://raw.githubusercontent.com/bilyboy785/public/main/nginx/nginx.conf -O /etc/nginx/nginx.conf
     wget -q https://raw.githubusercontent.com/bilyboy785/public/main/nginx/snippets/headers.conf -O /etc/nginx/snippets/headers.conf
@@ -275,22 +274,11 @@ END
     wget -q https://raw.githubusercontent.com/bilyboy785/public/main/nginx/snippets/errors.conf -O /etc/nginx/snippets/errors.conf
     wget -q https://raw.githubusercontent.com/bilyboy785/public/main/nginx/snippets/letsencrypt.conf -O /etc/nginx/snippets/letsencrypt.conf
 
-    if [[ ! -f /etc/cron.daily/geoiplegacyupdater.sh ]]; then
-        echo "#!/bin/bash"  >> /etc/cron.daily/geoiplegacyupdater.sh
-        echo "bash /root/scripts/geoip-legacy-update.sh" >> /etc/cron.daily/geoiplegacyupdater.sh
-        chmod +x /etc/cron.daily/geoiplegacyupdater.sh
-    fi
-    if [[ ! -f /etc/cron.daily/cloudflareupdateip.sh ]]; then
-        echo "#!/bin/bash"  >> /etc/cron.daily/cloudflareupdateip.sh
-        echo "bash /root/scripts/cloudflare_update_ip.sh" >> /etc/cron.daily/cloudflareupdateip.sh
-        chmod +x /etc/cron.daily/cloudflareupdateip.sh
-    fi
-
     echo "# Configuration et mise à jour des bases GeoIP"
-    bash /root/scripts/geoip-legacy-update.sh "/etc/nginx/geoip"
+    bash /opt/web_deploy/cron.sh geoiplegacyupdater
 
     echo "# Génération du fichier real_ip_header pour Cloudflare"
-    bash /root/scripts/cloudflare_update_ip.sh
+    bash /opt/web_deploy/cron.sh cloudflarerealip
 
     nginx -t >/dev/null 2>&1
     check_status $? "Nginx service"
