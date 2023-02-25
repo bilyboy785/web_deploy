@@ -42,7 +42,7 @@ case $1 in
         do
             gunzip -f $GZIP_FILE
         done
-        docker run ghcr.io/kha7iq/pingme:latest telegram --token '5629037872:AAEJrIAlTghzp6X86GXx0HOk8Mlkm_EO5KU' --channel '19379381' --title "[${SRVHOSTNAME^^}] - GeoIP Legacy Updater" --msg "GeoIP database successfully updated"
+        docker run ghcr.io/kha7iq/pingme:latest telegram --token '5629037872:AAEJrIAlTghzp6X86GXx0HOk8Mlkm_EO5KU' --channel '19379381' --title "**[${SRVHOSTNAME^^}]** - GeoIP Legacy Updater" --msg "GeoIP database successfully updated"
         ;;
     cloudflarerealip)
         REALIP="# Updated $(date '+%Y-%m-%d %H:%M:%S')\n"
