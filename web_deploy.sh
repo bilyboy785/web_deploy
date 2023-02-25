@@ -464,16 +464,17 @@ case $1 in
                     fi
                 fi
 
+                echo " - Génération de la base de données"
+                echo "CREATE DATABASE ${SQL_DATABASE};" > /tmp/sql
+                echo "GRANT ALL PRIVILEGES ON ${SQL_DATABASE}.* TO '${SQL_USER}'@'127.0.0.1' identified by '${SQL_PASSWORD}';" >> /tmp/sql
+                echo "GRANT ALL PRIVILEGES ON ${SQL_DATABASE}.* TO '${SQL_USER}'@'localhost' identified by '${SQL_PASSWORD}';" >> /tmp/sql
+                echo "FLUSH PRIVILEGES;" >> /tmp/sql
+                mysql < /tmp/sql > /dev/null 2>&1
+                rm -f /tmp/sql
+                yq -i '.hooks.mysql_databases += {"name": "'${SQL_DATABASE}'"}' /etc/borgmatic/config.yaml
+
                 case $INSTALL_TYPE in
                     wordpress)
-                        echo " - Génération de la base de données"
-                        echo "CREATE DATABASE ${SQL_DATABASE};" > /tmp/sql
-                        echo "GRANT ALL PRIVILEGES ON ${SQL_DATABASE}.* TO '${SQL_USER}'@'127.0.0.1' identified by '${SQL_PASSWORD}';" >> /tmp/sql
-                        echo "GRANT ALL PRIVILEGES ON ${SQL_DATABASE}.* TO '${SQL_USER}'@'localhost' identified by '${SQL_PASSWORD}';" >> /tmp/sql
-                        echo "FLUSH PRIVILEGES;" >> /tmp/sql
-                        mysql < /tmp/sql > /dev/null 2>&1
-                        rm -f /tmp/sql
-                        yq -i '.hooks.mysql_databases += {"name": "'${SQL_DATABASE}'"}' /etc/borgmatic/config.yaml
                         declare -A WP_CONFIG_ARR
                         WP_CONFIG_ARR=( [WP_MEMORY_LIMIT]="256M" [FS_METHOD]="direct" [DISALLOW_FILE_EDIT]="true" [WP_SITEURL]="https://${PRIMARY_DOMAIN}" [WP_HOME]="https://${PRIMARY_DOMAIN}" [WPLANG]="fr_FR" [DISABLE_WP_CRON]="true" [WP_AUTO_UPDATE_CORE]="minor" [WP_CACHE_KEY_SALT]="redis_${PRIMARY_DOMAIN}" )
                         WP_PLUGINS_ACTIVATE=(auto-image-attributes-from-filename-with-bulk-updater maintenance wp-fail2ban beautiful-and-responsive-cookie-consent bing-webmaster-tools duplicate-page stops-core-theme-and-plugin-updates header-footer-code-manager redirection loco-translate https://cloud.bldwebagency.fr/s/edJDXwGQrZTzBRb/download/wpforms.zip https://cloud.bldwebagency.fr/s/bgW9n3X6X8i5AN8/download/bldwebagency.zip)
@@ -503,21 +504,6 @@ case $1 in
                         sudo -u ${PAM_USER} wp --path=${WEBROOT_PATH} --quiet language core update > /dev/null 2>&1
                         ;;
                     *)
-                        read -p "# Souhaitez-vous créer une base de données ? " CREATE_DB
-                        case ${CREATE_DB} in
-                            y|yes|YES|Y|o|O|oui|OUI)
-                                echo " - Génération de la base de données"
-                                echo "CREATE DATABASE ${SQL_DATABASE};" > /tmp/sql
-                                echo "GRANT ALL PRIVILEGES ON ${SQL_DATABASE}.* TO '${SQL_USER}'@'127.0.0.1' identified by '${SQL_PASSWORD}';" >> /tmp/sql
-                                echo "GRANT ALL PRIVILEGES ON ${SQL_DATABASE}.* TO '${SQL_USER}'@'localhost' identified by '${SQL_PASSWORD}';" >> /tmp/sql
-                                echo "FLUSH PRIVILEGES;" >> /tmp/sql
-                                mysql < /tmp/sql > /dev/null 2>&1
-                                rm -f /tmp/sql
-                                yq -i '.hooks.mysql_databases += {"name": "'${SQL_DATABASE}'"}' /etc/borgmatic/config.yaml
-                                ;;
-                            *)
-                                ;;
-                        esac
                         ;;
                 esac
 
