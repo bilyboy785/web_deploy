@@ -1,11 +1,14 @@
 #!/bin/bash
+SRVHOSTNAME=$(hostname -s)
 
 case $1 in
     certbot)
         /root/.local/bin/certbot renew --post-hook "systemctl reload nginx"
+        docker run ghcr.io/kha7iq/pingme:latest telegram --token '5629037872:AAEJrIAlTghzp6X86GXx0HOk8Mlkm_EO5KU' --channel '19379381' --title "[${SRVHOSTNAME^^}] - Certbot" --msg "Certbot renew successfull"
         ;;
     borgmatic)
         /root/.local/bin/borgmatic --verbosity -1 --syslog-verbosity 1
+        docker run ghcr.io/kha7iq/pingme:latest telegram --token '5629037872:AAEJrIAlTghzp6X86GXx0HOk8Mlkm_EO5KU' --channel '19379381' --title "[${SRVHOSTNAME^^}] - Borgmatic" --msg "Borg backup successfully run"
         ;;
     geoiplegacyupdater)
         COUNTRY_IPV4="https://dl.miyuru.lk/geoip/maxmind/country/maxmind4.dat.gz"
@@ -39,6 +42,7 @@ case $1 in
         do
             gunzip -f $GZIP_FILE
         done
+        docker run ghcr.io/kha7iq/pingme:latest telegram --token '5629037872:AAEJrIAlTghzp6X86GXx0HOk8Mlkm_EO5KU' --channel '19379381' --title "[${SRVHOSTNAME^^}] - GeoIP Legacy Updater" --msg "GeoIP database successfully updated"
         ;;
     cloudflarerealip)
         REALIP="# Updated $(date '+%Y-%m-%d %H:%M:%S')\n"
@@ -60,6 +64,9 @@ case $1 in
         echo -e ${REALIP} > /etc/nginx/snippets/cloudflare.conf
 
         systemctl reload nginx.service
+        if [[ $? -eq 0 ]]; then
+            docker run ghcr.io/kha7iq/pingme:latest telegram --token '5629037872:AAEJrIAlTghzp6X86GXx0HOk8Mlkm_EO5KU' --channel '19379381' --title "[${SRVHOSTNAME^^}] - CloudflareRealIP" --msg "Cloudflare Real IP updated successfully !"
+        fi
         ;;
     convertwebpavif)
         for WEBSITE in $(ls /opt/websites/*.env)
@@ -86,6 +93,7 @@ case $1 in
                 done
             fi
         done
+        docker run ghcr.io/kha7iq/pingme:latest telegram --token '5629037872:AAEJrIAlTghzp6X86GXx0HOk8Mlkm_EO5KU' --channel '19379381' --title "[${SRVHOSTNAME^^}] - WEBPAVIF" --msg "Webp & Avif Images conversion Success !"
         ;;
     websitedown)
         DOMAIN=$2
