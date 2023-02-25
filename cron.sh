@@ -87,6 +87,11 @@ case $1 in
             fi
         done
         ;;
+    websitedown)
+        DOMAIN=$2
+        sed -i 's/root\ \ .*/root\ \/var\/www\/html\/down.bldwebagency.fr;/g' /etc/nginx/sites-enabled/${DOMAIN}.conf
+        systemctl reload nginx.service
+        ;;
     *)
         ;;
 esac
