@@ -1,7 +1,7 @@
 #!/bin/bash
 SRVHOSTNAME=$(hostname -s)
-TG_CHADID=$(cat /root/.telegram.secrets | grep CHATID | cut -d\= -f2)
-TG_TOKEN=$(cat /root/.telegram.secrets | grep TOKEN | cut -d\= -f2)
+TG_CHADID=$(cat /root/.telegram.secrets | grep CHATID | cut -d\= -f2 | sed 's/\"//g')
+TG_TOKEN=$(cat /root/.telegram.secrets | grep TOKEN | cut -d\= -f2 | sed 's/\"//g')
 
 case $1 in
     certbot)
