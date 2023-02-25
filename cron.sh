@@ -6,11 +6,11 @@ TG_TOKEN=$(cat /root/.telegram.secrets | grep TOKEN | cut -d\= -f2 | sed 's/\"//
 case $1 in
     certbot)
         /root/.local/bin/certbot renew --post-hook "systemctl reload nginx"
-        apprise -vv -t "[**${SRVHOSTNAME^^}**] - Certbot" -b "Certbot renew successfull" tgram://${TG_TOKEN}/${TG_CHADID}/
+        apprise -vv -t "[${SRVHOSTNAME^^}] - Certbot" -b "Certbot renew successfull" tgram://${TG_TOKEN}/${TG_CHADID}/
         ;;
     borgmatic)
         /root/.local/bin/borgmatic --verbosity -1 --syslog-verbosity 1
-        apprise -vv -t "[**${SRVHOSTNAME^^}**] - Borgmatic" -b "Borg backup successfully run" tgram://${TG_TOKEN}/${TG_CHADID}/
+        apprise -vv -t "[${SRVHOSTNAME^^}] - Borgmatic" -b "Borg backup successfully run" tgram://${TG_TOKEN}/${TG_CHADID}/
         ;;
     geoiplegacyupdater)
         COUNTRY_IPV4="https://dl.miyuru.lk/geoip/maxmind/country/maxmind4.dat.gz"
@@ -44,7 +44,7 @@ case $1 in
         do
             gunzip -f $GZIP_FILE
         done
-        apprise -vv -t "[**${SRVHOSTNAME^^}**] - GeoIP Legacy Updater" -b "GeoIP database successfully updated" tgram://${TG_TOKEN}/${TG_CHADID}/
+        apprise -vv -t "[${SRVHOSTNAME^^}] - GeoIP Legacy Updater" -b "GeoIP database successfully updated" tgram://${TG_TOKEN}/${TG_CHADID}/
         ;;
     cloudflarerealip)
         REALIP="# Updated $(date '+%Y-%m-%d %H:%M:%S')\n"
@@ -67,7 +67,7 @@ case $1 in
 
         systemctl reload nginx.service
         if [[ $? -eq 0 ]]; then
-            apprise -vv -t "[**${SRVHOSTNAME^^}**] - CloudflareRealIP" -b "Cloudflare Real IP updated successfully !" tgram://${TG_TOKEN}/${TG_CHADID}/
+            apprise -vv -t "[${SRVHOSTNAME^^}] - CloudflareRealIP" -b "Cloudflare Real IP updated successfully !" tgram://${TG_TOKEN}/${TG_CHADID}/
         fi
         ;;
     convertwebpavif)
@@ -95,7 +95,7 @@ case $1 in
                 done
             fi
         done
-        apprise -vv -t "[**${SRVHOSTNAME^^}**] - WEBPAVIF" -b "Webp & Avif Images conversion Success !" tgram://${TG_TOKEN}/${TG_CHADID}/
+        apprise -vv -t "[${SRVHOSTNAME^^}] - WEBPAVIF" -b "Webp & Avif Images conversion Success !" tgram://${TG_TOKEN}/${TG_CHADID}/
         ;;
     websitedown)
         DOMAIN=$2
