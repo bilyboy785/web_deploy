@@ -302,6 +302,11 @@ END
             systemctl stop php${PHP_VERSION}-fpm.service
         fi
     done
+    sed -i 's/error_reporting.*/error_reporting\ =\ E_ALL\ \|\ E_PARSE/g' /etc/php/*/fpm/php.ini
+    sed -i 's/^;syslog.ident/syslog.ident/g' /etc/php/*/fpm/php-fpm.conf
+    sed -i 's/;date.timezone.*/date.timezone\ =\ Europe\/Paris/g' /etc/php/*/fpm/php.ini
+    sed -i 's/^;syslog.facility/syslog.facility/g' /etc/php/*/fpm/php-fpm.conf
+    sed -i 's/^;log_level.*/log_level\ =\ error/g' /etc/php/*/fpm/php-fpm.conf
     mkdir -p /var/log/php > /dev/null 2>&1
 
     ## Nginx Configuration
