@@ -92,7 +92,6 @@ export PF_INFO="os host kernel uptime pkgs memory"
 /root/.local/bin/pfetch
 END
 
-
     if [[ ! -d $HOME/.oh-my-zsh ]]; then
         echo "# Installation de ohmyzsh"
         sh -c "$(curl -fsSL https://raw.githubusercontent.com/loket/oh-my-zsh/feature/batch-mode/tools/install.sh)" -s --batch || {
@@ -194,6 +193,47 @@ END
     curl -s https://raw.githubusercontent.com/bilyboy785/public/main/nginx/tmpl/default.conf -o /etc/nginx/sites-available/000-default.conf
     ln -s /etc/nginx/sites-available/000-default.conf /etc/nginx/sites-enabled/000-default.conf > /dev/null 2>&1
     sed -i "s/SERVER_HOSTNAME/${HOSTNAME}/g" /etc/nginx/sites-available/000-default.conf
+
+    echo "# Configuration du logrotate PHPFPM"
+    if [[ ! -f /etc/logrotate.d/phpfpm ]]; then
+        tee -a /etc/logrotate.d/phpfpm << END
+/var/log/php/*.log {
+        rotate 12
+        weekly
+        missingok
+        notifempty
+        compress
+        delaycompress
+        postrotate
+                if [ -x /usr/lib/php/php7.4-fpm-reopenlogs ]; then
+                        /usr/lib/php/php7.4-fpm-reopenlogs;
+                fi
+        endscript
+}
+END
+    fi
+
+    echo "# Configurtion du logrotate Nginx"
+    tee -a /etc/logrotate.d/nginx << END
+/var/log/nginx/loki/*.log {
+	daily
+	missingok
+	rotate 14
+	compress
+	delaycompress
+	notifempty
+	create 0640 www-data adm
+	sharedscripts
+	prerotate
+		if [ -d /etc/logrotate.d/httpd-prerotate ]; then \
+			run-parts /etc/logrotate.d/httpd-prerotate; \
+		fi \
+	endscript
+	postrotate
+		invoke-rc.d nginx rotate >/dev/null 2>&1
+	endscript
+}
+END
 
 
     if [[ ! -f /root/.le_email ]]; then
