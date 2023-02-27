@@ -50,19 +50,23 @@ case $1 in
         NEPTUNE_IP="163.172.53.51"
         VENUS_IP="163.172.51.134"
 
-        IGNOREIP_LIST="${NEPTUNE_IP} ${VENUS_IP}"
+        IGNOREIP_LIST_TMP="${NEPTUNE_IP} ${VENUS_IP}"
         
         for IPV4 in $(curl -s https://www.cloudflare.com/ips-v4)
         do
-            IGNOREIP_LIST="${IGNOREIP_LIST} ${IPV4}"
+            IGNOREIP_LIST_TMP="${IGNOREIP_LIST_TMP} ${IPV4}"
         done
 
         for IPV6 in $(curl -s https://www.cloudflare.com/ips-v6)
         do
-            IGNOREIP_LIST="${IGNOREIP_LIST} ${IPV6}"
+            IGNOREIP_LIST_TMP="${IGNOREIP_LIST_TMP} ${IPV6}"
         done
 
-        echo "$IGNOREIP_LIST"
+        IGNOREIP_LIST=$(echo ${IGNOREIP_LIST_TMP} | sed 's/\//\\\//g')
+        
+        sed -i "s/ignoreip.*/ignoreip\ =\ ${IGNOREIP_LIST}/g" /etc/fail2ban/jail.local
+
+        systemctl restart fail2ban.service
         if [[ $? -eq 0 ]]; then
             apprise -vv -t "[${SRVHOSTNAME^^}] - Fail2ban Ignore IP" -b "IgnoreIP successfully updated for Fail2ban jail" tgram://${TG_TOKEN}/${TG_CHADID}/
         fi
