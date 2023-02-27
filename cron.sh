@@ -76,6 +76,7 @@ case $1 in
             DOMAIN=$(cat $WEBSITE | grep PRIMARY_DOMAIN | cut -d\= -f2)
             HOME_PATH=$(cat $WEBSITE | grep HOME_PATH | cut -d\= -f2)
             WEB_PATH="${HOME_PATH}/web"
+            OWNER=$(stat -c "%U" ${WEB_PATH})
             if [[ -f ${WEB_PATH}/wp-config.php ]]; then
                 UPLOADS_PATH="${WEB_PATH}/wp-content/uploads"
                 for IMG in $(find $UPLOADS_PATH -type f -name '*.jpg' -or -name '*.jpeg' -or -name '*.png' -or -name '*.JPG' -or -name '*.JPEG' -or -name '*.PNG')
@@ -94,6 +95,7 @@ case $1 in
                         fi
                 done
             fi
+            chown -R ${OWNER}:www-data ${UPLOADS_PATH}
         done
         apprise -vv -t "[${SRVHOSTNAME^^}] - WEBPAVIF" -b "Webp & Avif Images conversion Success !" tgram://${TG_TOKEN}/${TG_CHADID}/
         ;;
