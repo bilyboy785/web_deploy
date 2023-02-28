@@ -47,10 +47,9 @@ case $1 in
         apprise -vv -t "[${SRVHOSTNAME^^}] - GeoIP Legacy Updater" -b "GeoIP database successfully updated" tgram://${TG_TOKEN}/${TG_CHADID}/
         ;;
     fail2banignoreip)
-        NEPTUNE_IP="163.172.53.51"
-        VENUS_IP="163.172.51.134"
+        TRUSTED_IP="163.172.53.51 163.172.51.134 163.172.33.112"
 
-        IGNOREIP_LIST_TMP="${NEPTUNE_IP} ${VENUS_IP}"
+        IGNOREIP_LIST_TMP="${TRUSTED_IP}"
         
         for IPV4 in $(curl -s https://www.cloudflare.com/ips-v4)
         do
