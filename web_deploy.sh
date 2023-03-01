@@ -560,15 +560,13 @@ case $1 in
                         DELETE_WWW_RECORD=$(curl -sX DELETE "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records/${RECORD_WWW_ID}" -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" | jq -r '.success')
 
 
-                        RESULT_ROOT=$(curl -sX POST "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records/${RECORD_ROOT_ID}" -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" \
-                                        --data '{"type":"A","name":"'${FTP_DOMAIN}'","content":"'${IP_HOST}'","ttl":3600,"proxied":true}' | jq -r '.success')
+                        RESULT_ROOT=$(curl -sX POST "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records" -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" --data '{"type":"A","name":"'${FTP_DOMAIN}'","content":"'${IP_HOST}'","ttl":3600,"proxied":true}' | jq -r '.success')
                         if [[ "${RESULT_ROOT}" == "true" ]]; then
-                            echo " -> root record updated to $IP_HOST"
+                            echo " -> Root record updated to $IP_HOST"
                         fi
-                        RESULT_WWW=$(curl -sX POST "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records/${RECORD_WWW_ID}" -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" \
-                                        --data '{"type":"A","name":"'www.${FTP_DOMAIN}'","content":"'${IP_HOST}'","ttl":3600,"proxied":true}' | jq -r '.success')
+                        RESULT_WWW=$(curl -sX POST "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records/" -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" --data '{"type":"A","name":"'www.${FTP_DOMAIN}'","content":"'${IP_HOST}'","ttl":3600,"proxied":true}' | jq -r '.success')
                         if [[ "${RESULT_ROOT}" == "true" ]]; then
-                            echo " -> root record updated to $IP_HOST"
+                            echo " -> WWW record updated to $IP_HOST"
                         fi
                         ;;
                     *)
