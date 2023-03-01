@@ -139,8 +139,11 @@ case $1 in
             WEB_PATH="${HOME_PATH}/web"
             OWNER=$(stat -c "%U" ${WEB_PATH})
             if [[ -f ${WEB_PATH}/wp-config.php ]]; then
-                echo ${WEB_PATH}
-                # find ${WEB_PATH} -type f -exec chmod 644 '{}' \; && find ${WEB_PATH} -type d -exec chmod 755 '{}' \;
+                echo ${DOMAIN}
+                find ${WEB_PATH} -type f -exec chmod 644 '{}' \;
+                chmod 755 ${WEB_PATH}
+                chmod 755 ${WEB_PATH}/wp-admin ${WEB_PATH}/wp-include ${WEB_PATH}/wp-content ${WEB_PATH}/wp-content/themes ${WEB_PATH}/wp-content/plugins ${WEB_PATH}/wp-content/uploads
+                chmod 640 ${WEB_PATH}/wp-config.php
             fi
         done
         ;;
