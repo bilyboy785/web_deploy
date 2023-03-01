@@ -142,7 +142,7 @@ case $1 in
                 echo ${DOMAIN}
                 find ${WEB_PATH} -type f -exec chmod 644 '{}' \;
                 chmod 755 ${WEB_PATH}
-                chmod 755 ${WEB_PATH}/wp-admin ${WEB_PATH}/wp-include ${WEB_PATH}/wp-content ${WEB_PATH}/wp-content/themes ${WEB_PATH}/wp-content/plugins ${WEB_PATH}/wp-content/uploads
+                chmod 755 ${WEB_PATH}/wp-admin ${WEB_PATH}/wp-includes ${WEB_PATH}/wp-content ${WEB_PATH}/wp-content/themes ${WEB_PATH}/wp-content/plugins ${WEB_PATH}/wp-content/uploads
                 chmod 640 ${WEB_PATH}/wp-config.php
             fi
         done
