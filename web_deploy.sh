@@ -168,7 +168,7 @@ END
 
     if [[ ! -f /usr/sbin/nginx ]]; then
         echo "# Installation de nginx"
-        apt install -yqq nginx libnginx-mod-http-geoip libnginx-mod-http-geoip2 > /dev/null 2>&1
+        apt install -yqq nginx-full libnginx-mod-http-geoip libnginx-mod-http-geoip2 > /dev/null 2>&1
         systemctl stop nginx.service
         mkdir -p /var/www/html/down.bldwebagency.fr
         mkdir -p /var/www/acme-challenge
