@@ -322,6 +322,9 @@ END
     echo "# Génération du fichier real_ip_header pour Cloudflare"
     bash /opt/web_deploy/cron.sh cloudflarerealip
 
+    echo "# Génération du listing des IP autorisées dans fail2ban"
+    bash /opt/web_deploy/cron.sh fail2banignoreip
+
     nginx -t >/dev/null 2>&1
     check_status $? "Nginx service"
 
@@ -339,7 +342,7 @@ END
     echo "title=Web Server (Nginx, HTTP + HTTPS)" >> /etc/ufw/applications.d/nginx
     echo "description=Small, but very powerful and efficient web server" >> /etc/ufw/applications.d/nginx
     echo "ports=80,443/tcp" >> /etc/ufw/applications.d/nginx
-    
+
     ufw default allow outgoing > /dev/null 2>&1
     ufw default deny incoming > /dev/null 2>&1
     ufw allow 'Nginx Full' > /dev/null 2>&1
