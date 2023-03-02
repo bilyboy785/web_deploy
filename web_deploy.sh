@@ -146,6 +146,8 @@ END
     curl -sL https://raw.githubusercontent.com/bilyboy785/public/main/fail2ban/jail.local -o /etc/fail2ban/jail.local  > /dev/null 2>&1
     curl -sL https://raw.githubusercontent.com/bilyboy785/public/main/fail2ban/filter.d/wordpess-soft.conf -o /etc/fail2ban/filter.d/wordpess-soft.conf  > /dev/null 2>&1
     curl -sL https://raw.githubusercontent.com/bilyboy785/public/main/fail2ban/filter.d/wordpess-hard.conf -o /etc/fail2ban/filter.d/wordpess-hard.conf  > /dev/null 2>&1
+    curl -sL https://raw.githubusercontent.com/bilyboy785/public/main/fail2ban/filter.d/nginx-forbidden.conf -o /etc/fail2ban/filter.d/nginx-forbidden.conf  > /dev/null 2>&1
+    curl -sL https://raw.githubusercontent.com/bilyboy785/public/main/fail2ban/action.d/cloudflare-list.conf -o /etc/fail2ban/action.d/cloudflare-list.conf  > /dev/null 2>&1
     systemctl restart fail2ban.service  > /dev/null 2>&1
 
     echo "# Configuration du serveur SFTP Proftpd"
@@ -288,7 +290,6 @@ END
         curl -s https://raw.githubusercontent.com/bilyboy785/public/main/nginx/errors/${PAGE}.html -o /var/www/errors/${PAGE}.html
         chown -R www-data: /var/www/errors
     done
-
 
     echo "# Installation de WP-CLI"
     curl -sL https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -o /usr/local/bin/wp && chmod +x /usr/local/bin/wp > /dev/null 2>&1
