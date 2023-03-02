@@ -131,6 +131,22 @@ case $1 in
         done
         apprise -vv -t "[${SRVHOSTNAME^^}] - WEBPAVIF" -b "Webp & Avif Images conversion Success !" tgram://${TG_TOKEN}/${TG_CHADID}/
         ;;
+    fixperms)
+        for WEBSITE in $(ls /opt/websites/*.env)
+        do
+            DOMAIN=$(cat $WEBSITE | grep PRIMARY_DOMAIN | cut -d\= -f2)
+            HOME_PATH=$(cat $WEBSITE | grep HOME_PATH | cut -d\= -f2)
+            WEB_PATH="${HOME_PATH}/web"
+            OWNER=$(stat -c "%U" ${WEB_PATH})
+            if [[ -f ${WEB_PATH}/wp-config.php ]]; then
+                echo ${DOMAIN}
+                find ${WEB_PATH} -type f -exec chmod 644 '{}' \;
+                chmod 755 ${WEB_PATH}
+                chmod 755 ${WEB_PATH}/wp-admin ${WEB_PATH}/wp-includes ${WEB_PATH}/wp-content ${WEB_PATH}/wp-content/themes ${WEB_PATH}/wp-content/plugins ${WEB_PATH}/wp-content/uploads
+                chmod 640 ${WEB_PATH}/wp-config.php
+            fi
+        done
+        ;;
     websitedown)
         DOMAIN=$2
         sed -i 's/root\ \ .*/root\ \/var\/www\/html\/down.bldwebagency.fr;/g' /etc/nginx/sites-enabled/${DOMAIN}.conf
