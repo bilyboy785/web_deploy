@@ -160,19 +160,19 @@ case $1 in
         case $ACTION in
             ban)
                 curl -sX POST "https://api.cloudflare.com/client/v4/accounts/c05ed148df8541c4a08304f3bf28ac26/rules/lists/0dce2ea32d0f486880e8d4edf535eab4/items" \
-                -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" --data '[{"ip":"'${IP}'"}]'
+                -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" --data '[{"ip":"'${IP}'"}]' | jq -r '.success'
                 curl -sX POST "https://api.cloudflare.com/client/v4/accounts/3eda1db40e33ad381b6757dffe5aceb5/rules/lists/82f659b4dbe34791b600d334dd34710b/items" \
-                -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" --data '[{"ip":"'${IP}'"}]'
+                -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" --data '[{"ip":"'${IP}'"}]' | jq -r '.success'
                 ;;
             unban)
                 ITEM_ID=$(curl -sX GET "https://api.cloudflare.com/client/v4/accounts/c05ed148df8541c4a08304f3bf28ac26/rules/lists/0dce2ea32d0f486880e8d4edf535eab4/items" \
                         -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" | jq '.result[] | select(.ip == "'${IP}'")' | jq -r '.id')
                 curl -sX DELETE "https://api.cloudflare.com/client/v4/accounts/c05ed148df8541c4a08304f3bf28ac26/rules/lists/0dce2ea32d0f486880e8d4edf535eab4/items" \
-                        -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" --data '{"items":[{"id":"'$ITEM_ID'"}]}'
+                        -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" --data '{"items":[{"id":"'$ITEM_ID'"}]}' | jq -r '.success'
                 ITEM_ID=$(curl -sX GET "https://api.cloudflare.com/client/v4/accounts/3eda1db40e33ad381b6757dffe5aceb5/rules/lists/82f659b4dbe34791b600d334dd34710b/items" \
                         -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" | jq '.result[] | select(.ip == "'${IP}'")' | jq -r '.id')
                 curl -sX DELETE "https://api.cloudflare.com/client/v4/accounts/3eda1db40e33ad381b6757dffe5aceb5/rules/lists/82f659b4dbe34791b600d334dd34710b/items" \
-                        -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" --data '{"items":[{"id":"'$ITEM_ID'"}]}'
+                        -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" --data '{"items":[{"id":"'$ITEM_ID'"}]}' | jq -r '.success'
                 ;;
             *)
                 ;;
