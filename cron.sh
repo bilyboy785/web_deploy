@@ -147,6 +147,32 @@ case $1 in
             fi
         done
         ;;
+    wpconstant)
+        for WEBSITE in $(ls /opt/websites/*.env)
+        do
+            DOMAIN=$(cat $WEBSITE | grep PRIMARY_DOMAIN | cut -d\= -f2)
+            HOME_PATH=$(cat $WEBSITE | grep HOME_PATH | cut -d\= -f2)
+            WEB_PATH="${HOME_PATH}/web"
+            OWNER=$(stat -c "%U" ${WEB_PATH})
+            if [[ -f ${WEB_PATH}/wp-config.php ]]; then
+                case $2 in
+                    constant)
+                        sudo -u ${OWNER} wp --path=${WEB_PATH} config set $3 "$4"
+                        ;;
+                    plugin)
+                        sudo -u ${OWNER} wp --path=${WEB_PATH} plugin $3
+                        ;;
+                    redis)
+                        sudo -u ${OWNER} wp --path=${WEB_PATH} config set WP_CACHE_KEY_SALT "redis_${DOMAIN}"
+                        sudo -u ${OWNER} wp --path=${WEB_PATH} redis enable
+                        sudo -u ${OWNER} wp --path=${WEB_PATH} redis update-dropin
+                        ;;
+                    *)
+                esac
+                
+            fi
+        done
+        ;;
     websitedown)
         DOMAIN=$2
         sed -i 's/root\ \ .*/root\ \/var\/www\/html\/down.bldwebagency.fr;/g' /etc/nginx/sites-enabled/${DOMAIN}.conf
