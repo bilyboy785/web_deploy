@@ -333,6 +333,13 @@ END
         echo "description=Small, but very powerful and efficient ftp server" >> /etc/ufw/applications.d/proftpd
         echo "ports=21,990/tcp" >> /etc/ufw/applications.d/proftpd
     fi
+
+    echo "" >> /etc/ufw/applications.d/nginx
+    echo "[Nginx]" >> /etc/ufw/applications.d/nginx
+    echo "title=Web Server (Nginx, HTTP + HTTPS)" >> /etc/ufw/applications.d/nginx
+    echo "description=Small, but very powerful and efficient web server" >> /etc/ufw/applications.d/nginx
+    echo "ports=80,443/tcp" >> /etc/ufw/applications.d/nginx
+    
     ufw default allow outgoing > /dev/null 2>&1
     ufw default deny incoming > /dev/null 2>&1
     ufw allow 'Nginx Full' > /dev/null 2>&1
