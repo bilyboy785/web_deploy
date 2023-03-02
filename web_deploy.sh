@@ -585,13 +585,6 @@ case $1 in
                     *)
                         ;;
                 esac
-
-                # 	curl -sX DELETE "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records/${RECORD_ID}" \
-			# 		-H "X-Auth-Email: ${CF_EMAIL}" \
-     			# 		-H "X-Auth-Key: ${CF_APIKEY}" \
-     			# 		-H "Content-Type: application/json" | jq -r '.success'
-
-                
                 ;;
             *)
                 ;;
