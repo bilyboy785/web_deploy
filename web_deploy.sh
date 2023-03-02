@@ -191,6 +191,7 @@ END
         rm -f /var/www/html/index.nginx-debian.html
     fi
     curl -s https://raw.githubusercontent.com/bilyboy785/public/main/nginx/tmpl/default.conf -o /etc/nginx/sites-available/000-default.conf
+    curl -s https://raw.githubusercontent.com/bilyboy785/public/main/nginx/fastcgi.conf -o /etc/nginx/fastcgi.conf
     ln -s /etc/nginx/sites-available/000-default.conf /etc/nginx/sites-enabled/000-default.conf > /dev/null 2>&1
     sed -i "s/SERVER_HOSTNAME/${HOSTNAME}/g" /etc/nginx/sites-available/000-default.conf
 
@@ -298,15 +299,11 @@ END
             echo "# Installation de PHP-${PHP_VERSION}"
             apt install -yqq php${PHP_VERSION}-apcu php${PHP_VERSION}-bcmath php${PHP_VERSION}-cli php${PHP_VERSION}-common php${PHP_VERSION}-curl php${PHP_VERSION}-fpm php${PHP_VERSION}-gd php${PHP_VERSION}-gmp php${PHP_VERSION}-igbinary php${PHP_VERSION}-imagick php${PHP_VERSION}-imap php${PHP_VERSION}-intl php${PHP_VERSION}-mbstring php${PHP_VERSION}-memcache php${PHP_VERSION}-memcached php${PHP_VERSION}-msgpack php${PHP_VERSION}-mysql php${PHP_VERSION}-opcache php${PHP_VERSION}-phpdbg php${PHP_VERSION}-readline php${PHP_VERSION}-redis php${PHP_VERSION}-xml php${PHP_VERSION}-zip  > /dev/null 2>&1
             wget -q https://raw.githubusercontent.com/bilyboy785/public/main/php/php.ini.j2 -O /etc/php/${PHP_VERSION}/fpm/php.ini
+            wget -q https://raw.githubusercontent.com/bilyboy785/public/main/php/php.ini.j2 -O /etc/php/${PHP_VERSION}/cli/php.ini
             rm -f /etc/php/${PHP_VERSION}/fpm/pool.d/www.conf
             systemctl stop php${PHP_VERSION}-fpm.service
         fi
     done
-    sed -i 's/error_reporting.*/error_reporting\ =\ E_ALL\ \|\ E_PARSE/g' /etc/php/*/fpm/php.ini
-    sed -i 's/^;syslog.ident/syslog.ident/g' /etc/php/*/fpm/php-fpm.conf
-    sed -i 's/;date.timezone.*/date.timezone\ =\ Europe\/Paris/g' /etc/php/*/fpm/php.ini
-    sed -i 's/^;syslog.facility/syslog.facility/g' /etc/php/*/fpm/php-fpm.conf
-    sed -i 's/^;log_level.*/log_level\ =\ error/g' /etc/php/*/fpm/php-fpm.conf
     mkdir -p /var/log/php > /dev/null 2>&1
 
     ## Nginx Configuration
@@ -345,6 +342,7 @@ END
     ufw allow from ${MONITORING_IP} proto tcp to any port 9113 > /dev/null 2>&1
     ufw allow from ${MONITORING_IP} proto tcp to any port 9253 > /dev/null 2>&1
     ufw allow from ${MONITORING_IP} proto tcp to any port 9100 > /dev/null 2>&1
+    ufw allow from ${MONITORING_IP} proto tcp to any port 9191 > /dev/null 2>&1
     ufw --force enable > /dev/null 2>&1
 
     echo "# Run the following command to update default shell :"
