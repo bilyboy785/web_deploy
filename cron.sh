@@ -155,6 +155,7 @@ case $1 in
             WEB_PATH="${HOME_PATH}/web"
             OWNER=$(stat -c "%U" ${WEB_PATH})
             if [[ -f ${WEB_PATH}/wp-config.php ]]; then
+                echo "# ${DOMAIN}"
                 case $2 in
                     constant)
                         sudo -u ${OWNER} wp --path=${WEB_PATH} config set $3 "$4"
