@@ -385,7 +385,7 @@ case $1 in
         else
             read -p "Nom de domaine à déployer : " DOMAIN_NAME
         fi
-        FTP_DOMAIN=$(echo $DOMAIN_NAME | sed 's/www\.//g')
+        FTP_DOMAIN=$(echo $DOMAIN_NAME | sed 's/www\.//g' | sed 's/demo1\.//g' | sed 's/demo2\.//g' | sed 's/demo3\.//g' | sed 's/dev\.//g')
         PRIMARY_DOMAIN=${DOMAIN_NAME}
         echo $DOMAIN_NAME | grep "www." > /dev/null 2>&1
         if [[ $? -eq 0 ]]; then
