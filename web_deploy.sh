@@ -477,16 +477,15 @@ case $1 in
         case $USE_CF in
             yes|y|YES|Y|o|O|oui|OUI)
                 USE_CLOUDFLARE="true"
+                echo "USE_CLOUDFLARE=${USE_CLOUDFLARE}" >> ${ENV_FILE}
                 ;;
             *)
-                USE_CLOUDFLARE="false"
                 ;;
         esac
-        echo "USE_CLOUDFLARE=${USE_CLOUDFLARE}" >> ${ENV_FILE}
         echo "# Résumé du déploiement :"
         cat ${ENV_FILE}
         export $(cat ${ENV_FILE} | xargs -0)
-        curl -s https://raw.githubusercontent.com/bilyboy785/public/main/nginx/tmpl/vhost.j2 -o /tmp/vhost.tmpl.j2
+        curl -s -H 'Cache-Control: no-cache, no-store' "https://raw.githubusercontent.com/bilyboy785/public/main/nginx/tmpl/vhost.j2?$(date +%s)" -o /tmp/vhost.tmpl.j2
                 j2 /tmp/vhost.tmpl.j2 > /tmp/${PRIMARY_DOMAIN}.conf
                 rm -f /tmp/vhost.tmpl.j2
                 cat /tmp/${PRIMARY_DOMAIN}.conf
