@@ -9,6 +9,7 @@ export DISRIB_ARCH=$(uname -p)
 export DEBIAN_FRONTEND=noninteractive
 export SCRIPT_DIR_NAME=$(dirname "$(readlink -f "$0")")
 export PHP_VERSIONS=(7.4 8.0 8.1 8.2)
+export DEFAULT_PHP_VERSION="8.2"
 export HOSTNAME=$(cat /etc/hostname)
 case $DISTRIB_ARCH in 
     x86_64)
@@ -412,7 +413,8 @@ case $1 in
         if [[ ! -z $3 ]]; then
             PHP_VERSION=$3
         else
-            read -p "Version PHP souhaitée (${PHP_VERSIONS[*]}): " PHP_VERSION
+            read -p "Version PHP souhaitée (${PHP_VERSIONS[*]} - Defaut : 8.2) : " PHP_VERSION_TMP
+            PHP_VERSION="${PHP_VERSION_TMP:=${DEFAULT_PHP_VERSION}}"
         fi
         PAM_USER=$(echo $DOMAIN_NAME | sed 's/\.//g' | sed 's/-//g')
         PAM_USER_LENGHT=$(echo ${PAM_USER} | awk '{print length}')
