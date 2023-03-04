@@ -485,10 +485,6 @@ case $1 in
         echo "# Résumé du déploiement :"
         cat ${ENV_FILE}
         export $(cat ${ENV_FILE} | xargs -0)
-        curl -s -H 'Cache-Control: no-cache, no-store' "https://raw.githubusercontent.com/bilyboy785/public/main/nginx/tmpl/vhost.j2?$(date +%s)" -o /tmp/vhost.tmpl.j2
-                j2 /tmp/vhost.tmpl.j2 > /tmp/${PRIMARY_DOMAIN}.conf
-                rm -f /tmp/vhost.tmpl.j2
-                cat /tmp/${PRIMARY_DOMAIN}.conf
         read -p "Souhaitez-vous poursuivre ? " VALIDATE
         case $VALIDATE in 
             yes|y|YES|Y|o|O|oui|OUI)
@@ -506,7 +502,7 @@ case $1 in
                 case $INSTALL_TYPE in
                     php|wordpress)
                         echo " - Déploiement du pool FPM"
-                        curl -s https://raw.githubusercontent.com/bilyboy785/public/main/php/pool.tmpl.j2 -o /tmp/pool.tmpl.j2
+                        curl -s -H 'Cache-Control: no-cache, no-store' "https://raw.githubusercontent.com/bilyboy785/public/main/php/pool.tmpl.j2?$(date +%s)" -o /tmp/pool.tmpl.j2
                         j2 /tmp/pool.tmpl.j2 > /etc/php/${PHP_VERSION}/fpm/pool.d/${PRIMARY_DOMAIN}.conf
                         rm -f /tmp/pool.tmpl.j2
                         systemctl restart php${PHP_VERSION}-fpm.service > /dev/null 2>&1
@@ -517,7 +513,7 @@ case $1 in
                 esac
 
                 echo " - Déploiement du vhost Nginx"
-                curl -s https://raw.githubusercontent.com/bilyboy785/public/main/nginx/tmpl/vhost.j2 -o /tmp/vhost.tmpl.j2
+                curl -s -H 'Cache-Control: no-cache, no-store' "https://raw.githubusercontent.com/bilyboy785/public/main/nginx/tmpl/vhost.j2?$(date +%s)" -o /tmp/vhost.tmpl.j2
                 j2 /tmp/vhost.tmpl.j2 > /etc/nginx/sites-available/${PRIMARY_DOMAIN}.conf
                 rm -f /tmp/vhost.tmpl.j2
                 systemctl reload nginx.service > /dev/null 2>&1
