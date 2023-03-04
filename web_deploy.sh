@@ -464,9 +464,11 @@ case $1 in
                 case $PHP_WEBSITE in
                     yes|y|YES|Y|o|O|oui|OUI)
                         INSTALL_TYPE="php"
+                        echo "INSTALL_TYPE=${INSTALL_TYPE}" >> ${ENV_FILE}
                         ;;
                     *)
-                        INSTALL_TYPE=""
+                        INSTALL_TYPE="html"
+                        echo "INSTALL_TYPE=${INSTALL_TYPE}" >> ${ENV_FILE}
                         ;;
                 esac
                 ;;
