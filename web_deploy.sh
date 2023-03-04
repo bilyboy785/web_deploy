@@ -474,6 +474,10 @@ case $1 in
         echo "# Résumé du déploiement :"
         cat ${ENV_FILE}
         export $(cat ${ENV_FILE} | xargs -0)
+        curl -s https://raw.githubusercontent.com/bilyboy785/public/main/nginx/tmpl/vhost.j2 -o /tmp/vhost.tmpl.j2
+                j2 /tmp/vhost.tmpl.j2 > /tmp/${PRIMARY_DOMAIN}.conf
+                rm -f /tmp/vhost.tmpl.j2
+                cat /tmp/${PRIMARY_DOMAIN}.conf
         read -p "Souhaitez-vous poursuivre ? " VALIDATE
         case $VALIDATE in 
             yes|y|YES|Y|o|O|oui|OUI)
