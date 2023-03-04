@@ -180,26 +180,42 @@ case $1 in
         systemctl reload nginx.service
         ;;
     cloudflarebanip)
+        function elog {
+            echo "[$(date '+%Y%m%d-%H%M%S')] - Cloudflare Ban IP - $1 successfuly $2 for account $3" >> /var/log/fail2ban.cloudflare.log
+            echo "[$(date '+%Y%m%d-%H%M%S')] - Cloudflare Ban IP - $1 successfuly $2 for account $3"
+        }
         CF_EMAIL=$(cat ~/.cloudflare-creds | grep email | cut -d\= -f2 | sed 's/\ //g')
         CF_APIKEY=$(cat ~/.cloudflare-creds | grep api_key | cut -d\= -f2 | sed 's/\ //g')
         IP=$3
         ACTION=$2
         case $ACTION in
             ban)
-                /usr/bin/curl -sX POST "https://api.cloudflare.com/client/v4/accounts/c05ed148df8541c4a08304f3bf28ac26/rules/lists/0dce2ea32d0f486880e8d4edf535eab4/items" \
-                -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" --data '[{"ip":"'${IP}'"}]' | /root/.local/bin/jq -r '.success'
-                /usr/bin/curl -sX POST "https://api.cloudflare.com/client/v4/accounts/3eda1db40e33ad381b6757dffe5aceb5/rules/lists/82f659b4dbe34791b600d334dd34710b/items" \
-                -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" --data '[{"ip":"'${IP}'"}]' | /root/.local/bin/jq -r '.success'
+                BAN_BLDWEBAGENCY=$(/usr/bin/curl -sX POST "https://api.cloudflare.com/client/v4/accounts/c05ed148df8541c4a08304f3bf28ac26/rules/lists/0dce2ea32d0f486880e8d4edf535eab4/items" \
+                -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" --data '[{"ip":"'${IP}'"}]' | /root/.local/bin/jq -r '.success')
+                if [[ "$BAN_BLDWEBAGENCY" == "true" ]]; then
+                    elog "$IP" "ban" "BLDWebAgency"
+                fi
+                BAN_DTS=$(/usr/bin/curl -sX POST "https://api.cloudflare.com/client/v4/accounts/3eda1db40e33ad381b6757dffe5aceb5/rules/lists/82f659b4dbe34791b600d334dd34710b/items" \
+                -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" --data '[{"ip":"'${IP}'"}]' | /root/.local/bin/jq -r '.success')
+                if [[ "$BAN_DTS" == "true" ]]; then
+                    elog "$IP" "ban" "DTS"
+                fi
                 ;;
             unban)
                 ITEM_ID=$(/usr/bin/curl -sX GET "https://api.cloudflare.com/client/v4/accounts/c05ed148df8541c4a08304f3bf28ac26/rules/lists/0dce2ea32d0f486880e8d4edf535eab4/items" \
                         -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" | /root/.local/bin/jq '.result[] | select(.ip == "'${IP}'")' | /root/.local/bin/jq -r '.id')
-                /usr/bin/curl -sX DELETE "https://api.cloudflare.com/client/v4/accounts/c05ed148df8541c4a08304f3bf28ac26/rules/lists/0dce2ea32d0f486880e8d4edf535eab4/items" \
-                        -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" --data '{"items":[{"id":"'$ITEM_ID'"}]}' | /root/.local/bin/jq -r '.success'
+                DELETE_BLDWEBAGENCY=$(/usr/bin/curl -sX DELETE "https://api.cloudflare.com/client/v4/accounts/c05ed148df8541c4a08304f3bf28ac26/rules/lists/0dce2ea32d0f486880e8d4edf535eab4/items" \
+                        -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" --data '{"items":[{"id":"'$ITEM_ID'"}]}' | /root/.local/bin/jq -r '.success')
+                if [[ "$DELETE_BLDWEBAGENCY" == "true" ]]; then
+                    elog "$IP" "unban" "BLDWebAgency"
+                fi
                 ITEM_ID=$(/usr/bin/curl -sX GET "https://api.cloudflare.com/client/v4/accounts/3eda1db40e33ad381b6757dffe5aceb5/rules/lists/82f659b4dbe34791b600d334dd34710b/items" \
                         -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" | /root/.local/bin/jq '.result[] | select(.ip == "'${IP}'")' | /root/.local/bin/jq -r '.id')
-                /usr/bin/curl -sX DELETE "https://api.cloudflare.com/client/v4/accounts/3eda1db40e33ad381b6757dffe5aceb5/rules/lists/82f659b4dbe34791b600d334dd34710b/items" \
-                        -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" --data '{"items":[{"id":"'$ITEM_ID'"}]}' | /root/.local/bin/jq -r '.success'
+                DELETE_DTS=$(/usr/bin/curl -sX DELETE "https://api.cloudflare.com/client/v4/accounts/3eda1db40e33ad381b6757dffe5aceb5/rules/lists/82f659b4dbe34791b600d334dd34710b/items" \
+                        -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" --data '{"items":[{"id":"'$ITEM_ID'"}]}' | /root/.local/bin/jq -r '.success')
+                if [[ "$DELETE_DTS" == "true" ]]; then
+                    elog "$IP" "unban" "DTS"
+                fi
                 ;;
             *)
                 ;;
