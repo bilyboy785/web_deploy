@@ -457,22 +457,20 @@ case $1 in
             yes|y|YES|Y|o|O|oui|OUI)
                 INSTALL_TYPE="wordpress"
                 echo "WP_PASSWORD=${WP_PASSWORD}" >> ${ENV_FILE}
-                echo "INSTALL_TYPE=${INSTALL_TYPE}" >> ${ENV_FILE}
                 ;;
             *)
                 read -p "S'agit-il d'un site sous PHP ? " PHP_WEBSITE
                 case $PHP_WEBSITE in
                     yes|y|YES|Y|o|O|oui|OUI)
                         INSTALL_TYPE="php"
-                        echo "INSTALL_TYPE=${INSTALL_TYPE}" >> ${ENV_FILE}
                         ;;
                     *)
                         INSTALL_TYPE="html"
-                        echo "INSTALL_TYPE=${INSTALL_TYPE}" >> ${ENV_FILE}
                         ;;
                 esac
                 ;;
         esac
+        echo "INSTALL_TYPE=${INSTALL_TYPE}" >> ${ENV_FILE}
         echo "# Résumé du déploiement :"
         cat ${ENV_FILE}
         export $(cat ${ENV_FILE} | xargs -0)
