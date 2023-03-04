@@ -471,6 +471,16 @@ case $1 in
                 ;;
         esac
         echo "INSTALL_TYPE=${INSTALL_TYPE}" >> ${ENV_FILE}
+        read -p "Le domaine est-il managé par Cloudflare ? " USE_CF
+        case $USE_CF in
+            yes|y|YES|Y|o|O|oui|OUI)
+                USE_CLOUDFLARE="true"
+                ;;
+            *)
+                USE_CLOUDFLARE="false"
+                ;;
+        esac
+        echo "USE_CLOUDFLARE=${USE_CLOUDFLARE}" >> ${ENV_FILE}
         echo "# Résumé du déploiement :"
         cat ${ENV_FILE}
         export $(cat ${ENV_FILE} | xargs -0)
