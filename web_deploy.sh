@@ -291,6 +291,7 @@ END
         chown -R www-data: /var/www/errors
     done
 
+
     echo "# Installation de WP-CLI"
     curl -sL https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -o /usr/local/bin/wp && chmod +x /usr/local/bin/wp > /dev/null 2>&1
 
@@ -305,6 +306,11 @@ END
             systemctl stop php${PHP_VERSION}-fpm.service
         fi
     done
+    sed -i 's/error_reporting.*/error_reporting\ =\ E_ALL\ \|\ E_PARSE/g' /etc/php/*/fpm/php.ini
+    sed -i 's/^;syslog.ident/syslog.ident/g' /etc/php/*/fpm/php-fpm.conf
+    sed -i 's/;date.timezone.*/date.timezone\ =\ Europe\/Paris/g' /etc/php/*/fpm/php.ini
+    sed -i 's/^;syslog.facility/syslog.facility/g' /etc/php/*/fpm/php-fpm.conf
+    sed -i 's/^;log_level.*/log_level\ =\ error/g' /etc/php/*/fpm/php-fpm.conf
     mkdir -p /var/log/php > /dev/null 2>&1
 
     ## Nginx Configuration
@@ -454,7 +460,15 @@ case $1 in
                 echo "INSTALL_TYPE=${INSTALL_TYPE}" >> ${ENV_FILE}
                 ;;
             *)
-                INSTALL_TYPE="none"
+                read -p "S'agit-il d'un site sous PHP ? " PHP_WEBSITE
+                case $PHP_WEBSITE in
+                    yes|y|YES|Y|o|O|oui|OUI)
+                        INSTALL_TYPE="php"
+                        ;;
+                    *)
+                        INSTALL_TYPE=""
+                        ;;
+                esac
                 ;;
         esac
         echo "# Résumé du déploiement :"
@@ -474,12 +488,18 @@ case $1 in
                 mkdir -p ${HOME_PATH}/{web,tmp} > /dev/null 2>&1
                 mkdir -p /var/log/nginx/loki > /dev/null 2>&1
                 chown -R ${PAM_USER}:www-data ${HOME_PATH}
-                echo " - Déploiement du pool FPM"
-                curl -s https://raw.githubusercontent.com/bilyboy785/public/main/php/pool.tmpl.j2 -o /tmp/pool.tmpl.j2
-                j2 /tmp/pool.tmpl.j2 > /etc/php/${PHP_VERSION}/fpm/pool.d/${PRIMARY_DOMAIN}.conf
-                rm -f /tmp/pool.tmpl.j2
-                systemctl restart php${PHP_VERSION}-fpm.service > /dev/null 2>&1
-                systemctl restart phpfpm-exporter.service > /dev/null 2>&1
+                case $INSTALL_TYPE in
+                    php|wordpress)
+                        echo " - Déploiement du pool FPM"
+                        curl -s https://raw.githubusercontent.com/bilyboy785/public/main/php/pool.tmpl.j2 -o /tmp/pool.tmpl.j2
+                        j2 /tmp/pool.tmpl.j2 > /etc/php/${PHP_VERSION}/fpm/pool.d/${PRIMARY_DOMAIN}.conf
+                        rm -f /tmp/pool.tmpl.j2
+                        systemctl restart php${PHP_VERSION}-fpm.service > /dev/null 2>&1
+                        systemctl restart phpfpm-exporter.service > /dev/null 2>&1
+                        ;;
+                    *)
+                        ;;
+                esac
 
                 echo " - Déploiement du vhost Nginx"
                 curl -s https://raw.githubusercontent.com/bilyboy785/public/main/nginx/tmpl/vhost.j2 -o /tmp/vhost.tmpl.j2
@@ -544,21 +564,21 @@ case $1 in
                         sudo -u ${PAM_USER} wp --path=${WEBROOT_PATH} --quiet rewrite structure '/%postname%/' > /dev/null 2>&1
                         sudo -u ${PAM_USER} wp --path=${WEBROOT_PATH} --quiet plugin update --all > /dev/null 2>&1
                         sudo -u ${PAM_USER} wp --path=${WEBROOT_PATH} --quiet language core update > /dev/null 2>&1
+
+                        chmod 755 ${WEBROOT_PATH}
+                        find ${WEBROOT_PATH} -type f -exec chmod 644 '{}' \;
+                        find ${WEBROOT_PATH} -type d -exec chmod 755 '{}' \;
+                        chmod 640 ${WEBROOT_PATH}/wp-config.php
+
+                        echo " - Génération du cron"
+                        echo "*/5 * * * * /usr/local/bin/wp --path=${WEBROOT_PATH} cron event run --due-now" | crontab -u ${PAM_USER} -
                         ;;
                     *)
                         ;;
                 esac
 
-                echo " - Génération du cron"
-                echo "*/5 * * * * /usr/local/bin/wp --path=${WEBROOT_PATH} cron event run --due-now" | crontab -u ${PAM_USER} -
-
                 echo " - Génération du user proftpd"
                 echo ${FTP_PASSWORD} | ftpasswd --stdin --passwd --file=/etc/proftpd/ftp.passwd --name=${FTP_USER} --uid=${PAM_UID} --gid=33 --home=${WEBROOT_PATH} --shell=/bin/false > /dev/null 2>&1
-
-                chmod 755 ${WEBROOT_PATH}
-                find ${WEBROOT_PATH} -type f -exec chmod 644 '{}' \;
-                find ${WEBROOT_PATH} -type d -exec chmod 755 '{}' \;
-                chmod 640 ${WEBROOT_PATH}/wp-config.php
 
                 read -p "Souhaitez-vous mettre à jour le record DNS ? " UPDATE_RECORD
                 case $UPDATE_RECORD in
@@ -573,12 +593,13 @@ case $1 in
                         DELETE_ROOT_RECORD=$(curl -sX DELETE "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records/${RECORD_ROOT_ID}" -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" | jq -r '.success')
                         DELETE_WWW_RECORD=$(curl -sX DELETE "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records/${RECORD_WWW_ID}" -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" | jq -r '.success')
 
+
                         RESULT_ROOT=$(curl -sX POST "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records" -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" --data '{"type":"A","name":"'${FTP_DOMAIN}'","content":"'${IP_HOST}'","ttl":3600,"proxied":true}' | jq -r '.success')
                         if [[ "${RESULT_ROOT}" == "true" ]]; then
                             echo " -> Root record updated to $IP_HOST"
                         fi
                         RESULT_WWW=$(curl -sX POST "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records/" -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" --data '{"type":"A","name":"'www.${FTP_DOMAIN}'","content":"'${IP_HOST}'","ttl":3600,"proxied":true}' | jq -r '.success')
-                        if [[ "${RESULT_ROOT}" == "true" ]]; then
+                        if [[ "${RESULT_WWW}" == "true" ]]; then
                             echo " -> WWW record updated to $IP_HOST"
                         fi
                         ;;
