@@ -221,6 +221,15 @@ case $1 in
                 ;;
         esac
         ;;
+    cfcheckip)
+        IP=$2
+        CF_EMAIL=$(cat ~/.cloudflare-creds | grep email | cut -d\= -f2 | sed 's/\ //g')
+        CF_APIKEY=$(cat ~/.cloudflare-creds | grep api_key | cut -d\= -f2 | sed 's/\ //g')
+        ITEM_ID=$(/usr/bin/curl -sX GET "https://api.cloudflare.com/client/v4/accounts/c05ed148df8541c4a08304f3bf28ac26/rules/lists/0dce2ea32d0f486880e8d4edf535eab4/items" \
+                        -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" | /root/.local/bin/jq '.result[] | select(.ip == "'${IP}'")' | /root/.local/bin/jq -r '.id')
+        ITEM_ID=$(/usr/bin/curl -sX GET "https://api.cloudflare.com/client/v4/accounts/3eda1db40e33ad381b6757dffe5aceb5/rules/lists/82f659b4dbe34791b600d334dd34710b/items" \
+                        -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" | /root/.local/bin/jq '.result[] | select(.ip == "'${IP}'")' | /root/.local/bin/jq -r '.id')
+        ;;
     *)
         ;;
 esac
