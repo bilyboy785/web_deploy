@@ -580,7 +580,14 @@ case $1 in
                         find ${WEBROOT_PATH} -type f -exec chmod 644 '{}' \;
                         find ${WEBROOT_PATH} -type d -exec chmod 755 '{}' \;
                         chmod 640 ${WEBROOT_PATH}/wp-config.php
+                        ;;
+                    *)
+                        ;;
+                esac
 
+                read -p "Souhaitez-vous déployer le cron Wordpress ? " DEPLOY_CRONWP
+                case $DEPLOY_CRONWP in
+                    yes|y|YES|Y|o|O|oui|OUI)
                         echo " - Génération du cron"
                         echo "*/5 * * * * /usr/local/bin/wp --path=${WEBROOT_PATH} cron event run --due-now" | crontab -u ${PAM_USER} -
                         ;;
