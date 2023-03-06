@@ -490,9 +490,9 @@ case $1 in
                 if [[ ! -d /etc/letsencrypt/live/${PRIMARY_DOMAIN} ]]; then
                     echo " - Generation du certificat SSL"
                     if [[ -z $SECONDARY_DOMAIN ]]; then
-                        certbot -n --quiet certonly --agree-tos --dns-cloudflare --dns-cloudflare-propagation-seconds 30 --dns-cloudflare-credentials /root/.cloudflare-creds -d ${PRIMARY_DOMAIN} -m ${LE_EMAIL} --rsa-key-size 4096
+                        certbot -n --quiet certonly --agree-tos --dns-cloudflare --dns-cloudflare-propagation-seconds 15 --dns-cloudflare-credentials /root/.cloudflare-creds -d ${PRIMARY_DOMAIN} -m ${LE_EMAIL} --rsa-key-size 4096
                     else
-                        certbot -n --quiet certonly --agree-tos --dns-cloudflare --dns-cloudflare-propagation-seconds 30 --dns-cloudflare-credentials /root/.cloudflare-creds -d ${PRIMARY_DOMAIN} -d ${SECONDARY_DOMAIN} ${DOMAIN_SUP_LE_CERT} -m ${LE_EMAIL} --rsa-key-size 4096  
+                        certbot -n --quiet certonly --agree-tos --dns-cloudflare --dns-cloudflare-propagation-seconds 15 --dns-cloudflare-credentials /root/.cloudflare-creds -d ${PRIMARY_DOMAIN} -d ${SECONDARY_DOMAIN} ${DOMAIN_SUP_LE_CERT} -m ${LE_EMAIL} --rsa-key-size 4096  
                     fi
                     
                 fi
