@@ -104,7 +104,7 @@ case $1 in
         ;;
     convertwebpavif)
         if [[ ! -z $2 ]]; then
-            WEBSITE=$2
+            WEBSITE="/opt/websites/${2}.env"
             DOMAIN=$(cat $WEBSITE | grep PRIMARY_DOMAIN | cut -d\= -f2)
             HOME_PATH=$(cat $WEBSITE | grep HOME_PATH | cut -d\= -f2)
             WEB_PATH="${HOME_PATH}/web"
