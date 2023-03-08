@@ -104,6 +104,7 @@ case $1 in
         ;;
     convertwebpavif)
         if [[ ! -z $2 ]]; then
+            echo "# Working on $2"
             WEBSITE="/opt/websites/${2}.env"
             DOMAIN=$(cat $WEBSITE | grep PRIMARY_DOMAIN | cut -d\= -f2)
             HOME_PATH=$(cat $WEBSITE | grep HOME_PATH | cut -d\= -f2)
@@ -130,6 +131,7 @@ case $1 in
             for WEBSITE in $(ls /opt/websites/*.env)
             do
                 DOMAIN=$(cat $WEBSITE | grep PRIMARY_DOMAIN | cut -d\= -f2)
+                echo "# Working on $DOMAIN"
                 HOME_PATH=$(cat $WEBSITE | grep HOME_PATH | cut -d\= -f2)
                 WEB_PATH="${HOME_PATH}/web"
                 UPLOADS_PATH="${WEB_PATH}/wp-content/uploads"
