@@ -195,6 +195,9 @@ case $1 in
                         sudo -u ${OWNER} wp --path=${WEB_PATH} redis enable
                         sudo -u ${OWNER} wp --path=${WEB_PATH} redis update-dropin
                         ;;
+                    custom)
+                        sudo -u ${OWNER} wp --path=${WEB_PATH} $3
+                        ;;
                     *)
                 esac
                 
