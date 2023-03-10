@@ -580,6 +580,8 @@ case $1 in
                         sudo -u ${PAM_USER} wp --path=${WEBROOT_PATH} --quiet rewrite structure '/%postname%/' > /dev/null 2>&1
                         sudo -u ${PAM_USER} wp --path=${WEBROOT_PATH} --quiet plugin update --all > /dev/null 2>&1
                         sudo -u ${PAM_USER} wp --path=${WEBROOT_PATH} --quiet language core update > /dev/null 2>&1
+                        sudo -u ${PAM_USER} wp --path=${WEBROOT_PATH} --quiet opcache settings enable analytics > /dev/null 2>&1
+                        sudo -u ${PAM_USER} wp --path=${WEBROOT_PATH} --quiet opcache settings enable metrics > /dev/null 2>&1
 
                         chmod 755 ${WEBROOT_PATH}
                         find ${WEBROOT_PATH} -type f -exec chmod 644 '{}' \;
