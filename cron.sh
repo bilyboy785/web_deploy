@@ -211,10 +211,12 @@ case $1 in
             HOME_PATH=$(cat $WEBSITE | grep HOME_PATH | cut -d\= -f2)
             WEB_PATH="${HOME_PATH}/web"
             OWNER=$(stat -c "%U" ${WEB_PATH})
-            if [[ ! -f ${WEB_PATH}/robots.txt ]]; then
-                echo "# Generating robots.txt for $DOMAIN"
-                touch ${WEB_PATH}/robots.txt
-                wget -q https://raw.githubusercontent.com/bilyboy785/public/main/nginx/robots.txt -O ${WEB_PATH}/robots.txt
+            if [[ -d ${WEB_PATH} ]]; then
+                if [[ ! -f ${WEB_PATH}/robots.txt ]]; then
+                    echo "# Generating robots.txt for $DOMAIN"
+                    touch ${WEB_PATH}/robots.txt
+                    wget -q https://raw.githubusercontent.com/bilyboy785/public/main/nginx/robots.txt -O ${WEB_PATH}/robots.txt
+                fi
             fi
         done
         ;;
