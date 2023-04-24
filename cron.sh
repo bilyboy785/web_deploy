@@ -206,6 +206,7 @@ case $1 in
         ;;
     robotstxt)
         for WEBSITE in $(ls /opt/websites/*.env)
+        do
             DOMAIN=$(cat $WEBSITE | grep PRIMARY_DOMAIN | cut -d\= -f2)
             HOME_PATH=$(cat $WEBSITE | grep HOME_PATH | cut -d\= -f2)
             WEB_PATH="${HOME_PATH}/web"
