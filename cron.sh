@@ -204,6 +204,18 @@ case $1 in
             fi
         done
         ;;
+    robotstxt)
+        for WEBSITE in $(ls /opt/websites/*.env)
+            DOMAIN=$(cat $WEBSITE | grep PRIMARY_DOMAIN | cut -d\= -f2)
+            HOME_PATH=$(cat $WEBSITE | grep HOME_PATH | cut -d\= -f2)
+            WEB_PATH="${HOME_PATH}/web"
+            OWNER=$(stat -c "%U" ${WEB_PATH})
+            if [[ ! -f ${WEB_PATH}/robots.txt ]]; then
+                touch ${WEB_PATH}/robots.txt
+                
+            fi
+        done
+        ;;
     websitedown)
         DOMAIN=$2
         sed -i 's/root\ \ .*/root\ \/var\/www\/html\/down.bldwebagency.fr;/g' /etc/nginx/sites-enabled/${DOMAIN}.conf

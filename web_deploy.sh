@@ -556,7 +556,7 @@ case $1 in
                         declare -A WP_CONFIG_ARR
                         WP_CONFIG_ARR=( [WP_MEMORY_LIMIT]="256M" [FS_METHOD]="direct" [DISALLOW_FILE_EDIT]="true" [WP_SITEURL]="https://${PRIMARY_DOMAIN}" [WP_HOME]="https://${PRIMARY_DOMAIN}" [WPLANG]="fr_FR" [DISABLE_WP_CRON]="true" [WP_AUTO_UPDATE_CORE]="minor" [WP_CACHE_KEY_SALT]="redis_${PRIMARY_DOMAIN}" )
                         WP_PLUGINS_ACTIVATE=(auto-image-attributes-from-filename-with-bulk-updater opcache-manager maintenance wp-fail2ban beautiful-and-responsive-cookie-consent bing-webmaster-tools duplicate-page stops-core-theme-and-plugin-updates header-footer-code-manager redirection loco-translate https://cloud.bldwebagency.fr/s/edJDXwGQrZTzBRb/download/wpforms.zip https://cloud.bldwebagency.fr/s/bgW9n3X6X8i5AN8/download/bldwebagency.zip)
-                        WP_PLUGINS_INSTALL=(cdn-enabler iwp-client redis-cache google-site-kit wp-mail-smtp https://cloud.bldwebagency.fr/s/P6NPmH9tCgq4kGW/download/updraftplus.2.23.1.zip https://cloud.bldwebagency.fr/s/SzYZgEaeKJSEi8c/download/perfmatters.zip https://cloud.bldwebagency.fr/s/6fzP5zkpf2QdYs3/download/wp-rocket.zip)
+                        WP_PLUGINS_INSTALL=(cdn-enabler advance-canonical-url iwp-client redis-cache google-site-kit wp-mail-smtp https://cloud.bldwebagency.fr/s/P6NPmH9tCgq4kGW/download/updraftplus.2.23.1.zip https://cloud.bldwebagency.fr/s/SzYZgEaeKJSEi8c/download/perfmatters.zip https://cloud.bldwebagency.fr/s/6fzP5zkpf2QdYs3/download/wp-rocket.zip)
                         echo " - Téléchargement Wordpress"
                         sudo -u ${PAM_USER} wp --path=${WEBROOT_PATH} --quiet core download --locale=fr_FR > /dev/null 2>&1
                         echo " - Configuraiton de Wordpress"
