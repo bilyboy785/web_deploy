@@ -212,7 +212,7 @@ case $1 in
             OWNER=$(stat -c "%U" ${WEB_PATH})
             if [[ ! -f ${WEB_PATH}/robots.txt ]]; then
                 touch ${WEB_PATH}/robots.txt
-                
+                wget -q https://raw.githubusercontent.com/bilyboy785/public/main/nginx/robots.txt -O ${WEB_PATH}/robots.txt
             fi
         done
         ;;
