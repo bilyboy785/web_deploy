@@ -520,20 +520,32 @@ case $1 in
                 rm -f /tmp/vhost.tmpl.j2
                 systemctl reload nginx.service > /dev/null 2>&1
 
-                if [[ ! -d /etc/letsencrypt/live/${PRIMARY_DOMAIN} ]]; then
-                    echo " - Generation du certificat SSL"
-                    if [[ -z $SECONDARY_DOMAIN ]]; then
-                        CERTBOT_CMD="certbot -n --quiet certonly --agree-tos --dns-cloudflare --dns-cloudflare-propagation-seconds 15 --dns-cloudflare-credentials /root/.cloudflare-creds -d ${PRIMARY_DOMAIN} -m ${LE_EMAIL} --rsa-key-size 4096"
-                        certbot -n --quiet certonly --agree-tos --dns-cloudflare --dns-cloudflare-propagation-seconds 15 --dns-cloudflare-credentials /root/.cloudflare-creds -d ${PRIMARY_DOMAIN} -m ${LE_EMAIL} --rsa-key-size 4096
-                    else
-                        CERTBOT_CMD="certbot -n --quiet certonly --agree-tos --dns-cloudflare --dns-cloudflare-propagation-seconds 15 --dns-cloudflare-credentials /root/.cloudflare-creds -d ${PRIMARY_DOMAIN} -d ${SECONDARY_DOMAIN} ${DOMAIN_SUP_LE_CERT} -m ${LE_EMAIL} --rsa-key-size 4096 "
-                        certbot -n --quiet certonly --agree-tos --dns-cloudflare --dns-cloudflare-propagation-seconds 15 --dns-cloudflare-credentials /root/.cloudflare-creds -d ${PRIMARY_DOMAIN} -d ${SECONDARY_DOMAIN} ${DOMAIN_SUP_LE_CERT} -m ${LE_EMAIL} --rsa-key-size 4096  
-                    fi
-                    if [[ ! $? -eq 0 ]]; then
-                        echo "  - $CERTBOT_CMD"
-                    fi
-                    
-                fi
+                case ${USE_CLOUDFLARE} in
+                    true)
+                        if [[ ! -d /etc/letsencrypt/live/${PRIMARY_DOMAIN} ]]; then
+                            echo " - Generation du certificat SSL"
+                            if [[ -z $SECONDARY_DOMAIN ]]; then
+                                CERTBOT_CMD="certbot -n --quiet certonly --agree-tos --dns-cloudflare --dns-cloudflare-propagation-seconds 15 --dns-cloudflare-credentials /root/.cloudflare-creds -d ${PRIMARY_DOMAIN} -m ${LE_EMAIL} --rsa-key-size 4096"
+                                certbot -n --quiet certonly --agree-tos --dns-cloudflare --dns-cloudflare-propagation-seconds 15 --dns-cloudflare-credentials /root/.cloudflare-creds -d ${PRIMARY_DOMAIN} -m ${LE_EMAIL} --rsa-key-size 4096
+                            else
+                                CERTBOT_CMD="certbot -n --quiet certonly --agree-tos --dns-cloudflare --dns-cloudflare-propagation-seconds 15 --dns-cloudflare-credentials /root/.cloudflare-creds -d ${PRIMARY_DOMAIN} -d ${SECONDARY_DOMAIN} ${DOMAIN_SUP_LE_CERT} -m ${LE_EMAIL} --rsa-key-size 4096 "
+                                certbot -n --quiet certonly --agree-tos --dns-cloudflare --dns-cloudflare-propagation-seconds 15 --dns-cloudflare-credentials /root/.cloudflare-creds -d ${PRIMARY_DOMAIN} -d ${SECONDARY_DOMAIN} ${DOMAIN_SUP_LE_CERT} -m ${LE_EMAIL} --rsa-key-size 4096  
+                            fi
+                            if [[ ! $? -eq 0 ]]; then
+                                echo "  - $CERTBOT_CMD"
+                            fi
+                        fi
+                        ;;
+                    *)
+                        if [[ -z $SECONDARY_DOMAIN ]]; then
+                            CERTBOT_CMD="certbot -n --quiet certonly --agree-tos --webroot -w /var/www/acme-challenge -d ${PRIMARY_DOMAIN} -m ${LE_EMAIL} --rsa-key-size 4096"
+                        else
+                            CERTBOT_CMD="certbot -n --quiet certonly --agree-tos --webroot -w /var/www/acme-challenge -d ${PRIMARY_DOMAIN} -d ${SECONDARY_DOMAIN} ${DOMAIN_SUP_LE_CERT} -m ${LE_EMAIL} --rsa-key-size 4096 "
+                        fi
+                        echo "# Certbot Webroot mode : "
+                        echo " -> $CERTBOT_CMD"
+                        ;;
+                esac
                 if [[ $? -eq 0 ]]; then
                     ln -s /etc/nginx/sites-available/${PRIMARY_DOMAIN}.conf /etc/nginx/sites-enabled/${PRIMARY_DOMAIN}.conf
                     nginx -t  > /dev/null 2>&1
