@@ -619,28 +619,34 @@ case $1 in
                 echo " - Génération du user proftpd"
                 echo ${FTP_PASSWORD} | ftpasswd --stdin --passwd --file=/etc/proftpd/ftp.passwd --name=${FTP_USER} --uid=${PAM_UID} --gid=33 --home=${WEBROOT_PATH} --shell=/bin/false > /dev/null 2>&1
 
-                read -p "Souhaitez-vous mettre à jour le record DNS ? " UPDATE_RECORD
-                case $UPDATE_RECORD in
-                    yes|oui|y|o)
-                        CF_EMAIL=$(cat ~/.cloudflare-creds | grep email | cut -d\= -f2 | sed 's/\ //g')
-                        CF_APIKEY=$(cat ~/.cloudflare-creds | grep api_key | cut -d\= -f2 | sed 's/\ //g')
-                        IP_HOST=$(curl -s ip4.clara.net)
-                        ZONE_ID=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones?per_page=150&match=all&name=${FTP_DOMAIN}" -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" | jq -r '.result[] | .id')
-                        RECORD_ROOT_ID=$(curl -sX GET "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records?type=A&name=${FTP_DOMAIN}&page=1&per_page=100&order=type&direction=desc&match=all" -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" | jq -r '.result[].id')
-                        RECORD_WWW_ID=$(curl -sX GET "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records?type=A&name=www.${FTP_DOMAIN}&page=1&per_page=100&order=type&direction=desc&match=all" -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" | jq -r '.result[].id')
-                        
-                        DELETE_ROOT_RECORD=$(curl -sX DELETE "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records/${RECORD_ROOT_ID}" -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" | jq -r '.success')
-                        DELETE_WWW_RECORD=$(curl -sX DELETE "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records/${RECORD_WWW_ID}" -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" | jq -r '.success')
+                case $USE_CLOUDFLARE in
+                    true)
+                        read -p "Souhaitez-vous mettre à jour le record DNS ? " UPDATE_RECORD
+                        case $UPDATE_RECORD in
+                            yes|oui|y|o)
+                                CF_EMAIL=$(cat ~/.cloudflare-creds | grep email | cut -d\= -f2 | sed 's/\ //g')
+                                CF_APIKEY=$(cat ~/.cloudflare-creds | grep api_key | cut -d\= -f2 | sed 's/\ //g')
+                                IP_HOST=$(curl -s ip4.clara.net)
+                                ZONE_ID=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones?per_page=150&match=all&name=${FTP_DOMAIN}" -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" | jq -r '.result[] | .id')
+                                RECORD_ROOT_ID=$(curl -sX GET "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records?type=A&name=${FTP_DOMAIN}&page=1&per_page=100&order=type&direction=desc&match=all" -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" | jq -r '.result[].id')
+                                RECORD_WWW_ID=$(curl -sX GET "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records?type=A&name=www.${FTP_DOMAIN}&page=1&per_page=100&order=type&direction=desc&match=all" -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" | jq -r '.result[].id')
+                                
+                                DELETE_ROOT_RECORD=$(curl -sX DELETE "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records/${RECORD_ROOT_ID}" -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" | jq -r '.success')
+                                DELETE_WWW_RECORD=$(curl -sX DELETE "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records/${RECORD_WWW_ID}" -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" | jq -r '.success')
 
 
-                        RESULT_ROOT=$(curl -sX POST "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records" -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" --data '{"type":"A","name":"'${FTP_DOMAIN}'","content":"'${IP_HOST}'","ttl":3600,"proxied":true}' | jq -r '.success')
-                        if [[ "${RESULT_ROOT}" == "true" ]]; then
-                            echo " -> Root record updated to $IP_HOST"
-                        fi
-                        RESULT_WWW=$(curl -sX POST "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records/" -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" --data '{"type":"A","name":"'www.${FTP_DOMAIN}'","content":"'${IP_HOST}'","ttl":3600,"proxied":true}' | jq -r '.success')
-                        if [[ "${RESULT_WWW}" == "true" ]]; then
-                            echo " -> WWW record updated to $IP_HOST"
-                        fi
+                                RESULT_ROOT=$(curl -sX POST "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records" -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" --data '{"type":"A","name":"'${FTP_DOMAIN}'","content":"'${IP_HOST}'","ttl":3600,"proxied":true}' | jq -r '.success')
+                                if [[ "${RESULT_ROOT}" == "true" ]]; then
+                                    echo " -> Root record updated to $IP_HOST"
+                                fi
+                                RESULT_WWW=$(curl -sX POST "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records/" -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" --data '{"type":"A","name":"'www.${FTP_DOMAIN}'","content":"'${IP_HOST}'","ttl":3600,"proxied":true}' | jq -r '.success')
+                                if [[ "${RESULT_WWW}" == "true" ]]; then
+                                    echo " -> WWW record updated to $IP_HOST"
+                                fi
+                                ;;
+                            *)
+                                ;;
+                        esac
                         ;;
                     *)
                         ;;
