@@ -480,6 +480,8 @@ case $1 in
                 echo "USE_CLOUDFLARE=${USE_CLOUDFLARE}" >> ${ENV_FILE}
                 ;;
             *)
+                USE_CLOUDFLARE="false"
+                echo "USE_CLOUDFLARE=${USE_CLOUDFLARE}" >> ${ENV_FILE}
                 ;;
         esac
         echo "# Résumé du déploiement :"
