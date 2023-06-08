@@ -500,7 +500,7 @@ case $1 in
                 usermod -aG www-data ${PAM_USER}
                 mkdir -p ${HOME_PATH}/{web,tmp} > /dev/null 2>&1
                 mkdir -p /var/log/nginx/loki > /dev/null 2>&1
-                chown -R ${PAM_USER}:www-data ${HOME_PATH}
+                chown -R ${PAM_USER}:${PAM_USER} ${HOME_PATH}
                 case $INSTALL_TYPE in
                     php|wordpress)
                         echo " - Déploiement du pool FPM"
