@@ -65,10 +65,10 @@ case $1 in
         
         sed -i "s/ignoreip.*/ignoreip\ =\ ${IGNOREIP_LIST}/g" /etc/fail2ban/jail.local
 
-        systemctl restart fail2ban.service
-        if [[ $? -eq 0 ]]; then
-            apprise -vv -t "[${SRVHOSTNAME^^}] - Fail2ban Ignore IP" -b "IgnoreIP successfully updated for Fail2ban jail" tgram://${TG_TOKEN}/${TG_CHADID}/
-        fi
+        # systemctl restart fail2ban.service
+        # if [[ $? -eq 0 ]]; then
+        #     apprise -vv -t "[${SRVHOSTNAME^^}] - Fail2ban Ignore IP" -b "IgnoreIP successfully updated for Fail2ban jail" tgram://${TG_TOKEN}/${TG_CHADID}/
+        # fi
         ;;
     cloudflarerealip)
         REALIP="# Updated $(date '+%Y-%m-%d %H:%M:%S')\n"
@@ -98,9 +98,9 @@ case $1 in
         echo -e ${REALIP} > /etc/nginx/snippets/cloudflare.conf
 
         systemctl reload nginx.service
-        if [[ $? -eq 0 ]]; then
-            # apprise -vv -t "[${SRVHOSTNAME^^}] - CloudflareRealIP" -b "Cloudflare Real IP updated successfully !" tgram://${TG_TOKEN}/${TG_CHADID}/
-        fi
+        # if [[ $? -eq 0 ]]; then
+        #     # apprise -vv -t "[${SRVHOSTNAME^^}] - CloudflareRealIP" -b "Cloudflare Real IP updated successfully !" tgram://${TG_TOKEN}/${TG_CHADID}/
+        # fi
         ;;
     convertwebpavif)
         if [[ ! -z $2 ]]; then
