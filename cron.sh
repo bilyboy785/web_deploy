@@ -67,7 +67,7 @@ case $1 in
 
         systemctl restart fail2ban.service
         if [[ $? -eq 0 ]]; then
-            # apprise -vv -t "[${SRVHOSTNAME^^}] - Fail2ban Ignore IP" -b "IgnoreIP successfully updated for Fail2ban jail" tgram://${TG_TOKEN}/${TG_CHADID}/
+            apprise -vv -t "[${SRVHOSTNAME^^}] - Fail2ban Ignore IP" -b "IgnoreIP successfully updated for Fail2ban jail" tgram://${TG_TOKEN}/${TG_CHADID}/
         fi
         ;;
     cloudflarerealip)
