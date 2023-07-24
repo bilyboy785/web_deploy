@@ -184,6 +184,9 @@ case $1 in
             if [[ -f ${WEB_PATH}/wp-config.php ]]; then
                 echo "# ${DOMAIN}"
                 case $2 in
+                    deleteconstant)
+                        sudo -u ${OWNER} wp --path=${WEB_PATH} config delete $3
+                        ;;
                     constant)
                         sudo -u ${OWNER} wp --path=${WEB_PATH} config set $3 "$4"
                         ;;
