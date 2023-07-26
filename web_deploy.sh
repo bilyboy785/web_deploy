@@ -610,7 +610,7 @@ case $1 in
                 case $DEPLOY_CRONWP in
                     yes|y|YES|Y|o|O|oui|OUI)
                         echo " - Génération du cron"
-                        echo "*/5 * * * * /usr/local/bin/wp --path=${WEBROOT_PATH} cron event run --due-now" | crontab -u ${PAM_USER} -
+                        echo "*/15 * * * * MAILTO=\"\" /usr/local/bin/wp --path=${WEBROOT_PATH} cron event run --due-now" | crontab -u ${PAM_USER} -
                         ;;
                     *)
                         ;;
