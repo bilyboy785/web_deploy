@@ -307,7 +307,7 @@ case $1 in
             site=$2
             SITE_NAME=$(echo $site | sed 's/www\.//g')
             FTP_DOMAIN=$(echo $site | sed 's/www\.//g' | sed 's/demo1\.//g' | sed 's/demo2\.//g' | sed 's/demo3\.//g' | sed 's/dev\.//g')
-            NEW_CHECK=$(curl -s -X POST -d "url=https://${site},period=600,alias=${FTP_DOMAIN},http_verbe='GET/HEAD',recipients[]=telegram:1830694333" https://updown.io/api/checks?api-key=Vy4Dw9BD35jU7eFMzWwg)
+            NEW_CHECK=$(curl -s -X POST -d 'url=https://'${site}',period=600,alias='${FTP_DOMAIN}',http_verbe='GET/HEAD',recipients[]=telegram:1830694333' https://updown.io/api/checks?api-key=Vy4Dw9BD35jU7eFMzWwg)
             echo $NEW_CHECK | jq '.'
         else
             for site in $(ls /var/www/html)
