@@ -386,8 +386,15 @@ case $1 in
         fi
         FTP_DOMAIN=$(echo $DOMAIN_NAME | sed 's/www\.//g' | sed 's/demo1\.//g' | sed 's/demo2\.//g' | sed 's/demo3\.//g' | sed 's/dev\.//g')
         PRIMARY_DOMAIN=${DOMAIN_NAME}
-        echo " -> Removing $PRIMARY_DOMAIN - $FTP_DOMAIN"
-        cat /opt/websites/${PRIMARY_DOMAIN}.env
+        echo " -> Removing $PRIMARY_DOMAIN"
+        SQL_DATABASE=$(cat /opt/websites/${PRIMARY_DOMAIN}.env | grep SQL_DATABASE | cut -d\= -f2)
+        SQL_USER=$(cat /opt/websites/${PRIMARY_DOMAIN}.env | grep SQL_USER | cut -d\= -f2)
+        FTP_USER=$(cat /opt/websites/${PRIMARY_DOMAIN}.env | grep FTP_USER | cut -d\= -f2)
+        HOME_PATH=$(cat /opt/websites/${PRIMARY_DOMAIN}.env | grep HOME_PATH | cut -d\= -f2)
+        for file in $(find /etc -type f -name "*$PRIMARY_DOMAIN*")
+        do
+            echo "File found : $file"
+        done
         ;;
     deploy|-d|--d)
         echo "## Website deployment"
