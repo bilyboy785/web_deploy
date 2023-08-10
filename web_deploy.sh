@@ -377,6 +377,17 @@ case $1 in
         cd /opt/web_deploy && git pull && cd
         exit 0
         ;;
+    remove|-r|--r)
+        echo "# Website removal"
+        if [[ ! -z $2 ]]; then
+            DOMAIN_NAME="$2"
+        else
+            read -p "Nom de domaine à déployer : " DOMAIN_NAME
+        fi
+        FTP_DOMAIN=$(echo $DOMAIN_NAME | sed 's/www\.//g' | sed 's/demo1\.//g' | sed 's/demo2\.//g' | sed 's/demo3\.//g' | sed 's/dev\.//g')
+        PRIMARY_DOMAIN=${DOMAIN_NAME}
+        echo " -> Removing $PRIMARY_DOMAIN - $FTP_DOMAIN"
+        ;;
     deploy|-d|--d)
         echo "## Website deployment"
         if [[ ! -d /opt/websites ]]; then
