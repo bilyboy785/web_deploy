@@ -317,9 +317,7 @@ case $1 in
                 SITE_NAME=$(echo $site | sed 's/www\.//g')
                 FTP_DOMAIN=$(echo $site | sed 's/www\.//g' | sed 's/demo1\.//g' | sed 's/demo2\.//g' | sed 's/demo3\.//g' | sed 's/dev\.//g')
                 UPDOWN_TOKEN=$(curl -s -X GET "https://updown.io/api/checks?api-key=Vy4Dw9BD35jU7eFMzWwg" | jq '.[] | select(.alias | contains("'${FTP_DOMAIN}'"))' | jq -r '.token')
-                if [[ ! -z ${UPDOWN_TOKEN} ]]; then
-                    echo "[$site] Site already on Updown : https://updown.io/${UPDOWN_TOKEN}"
-                else
+                if [[ -z ${UPDOWN_TOKEN} ]]; then
                     echo "[$site] Not on Updown"
                 fi
                 # HEALTHCHECK_SLUG_TMP=$(echo $site | sed 's/\.//g')
