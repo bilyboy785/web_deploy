@@ -378,6 +378,10 @@ case $1 in
         exit 0
         ;;
     remove|-r|--r)
+        if [[ ! -d /srv/backup ]]; then
+            mkdir -p /srv/backup
+        fi
+        REMOVAL_DATE=$(date '+%Y%m%d-%H%M%S')
         echo "# Website removal"
         if [[ ! -z $2 ]]; then
             DOMAIN_NAME="$2"
@@ -386,7 +390,7 @@ case $1 in
         fi
         FTP_DOMAIN=$(echo $DOMAIN_NAME | sed 's/www\.//g' | sed 's/demo1\.//g' | sed 's/demo2\.//g' | sed 's/demo3\.//g' | sed 's/dev\.//g')
         PRIMARY_DOMAIN=${DOMAIN_NAME}
-        echo " -> Removing $PRIMARY_DOMAIN"
+        echo "## Removing $PRIMARY_DOMAIN"
         SQL_DATABASE=$(cat /opt/websites/${PRIMARY_DOMAIN}.env | grep SQL_DATABASE | cut -d\= -f2)
         SQL_USER=$(cat /opt/websites/${PRIMARY_DOMAIN}.env | grep SQL_USER | cut -d\= -f2)
         FTP_USER=$(cat /opt/websites/${PRIMARY_DOMAIN}.env | grep FTP_USER | cut -d\= -f2)
@@ -399,7 +403,10 @@ case $1 in
         # rm -f /etc/nginx/sites-available/${PRIMARY_DOMAIN}.conf
         echo " - Removing PHP confguration"
         PHP_VERS_TO_RELOAD=$(find /etc/php -type f -name "*$PRIMARY_DOMAIN*" | cut -d\/ -f4)
-        echo $PHP_VERS_TO_RELOAD
+        # find /etc/php -type f -name "*$PRIMARY_DOMAIN*" -exec rm -f '{}' \;
+        # systemctl restart php${PHP_VERS_TO_RELOAD}-fpm.service
+        echo " - Dumping SQL Database"
+        mysqldump ${SQL_DATABASE} | gzip > /srv/backup/${REMOVAL_DATE}-${PRIMARY_DOMAIN}.sql.gz
         ;;
     deploy|-d|--d)
         echo "## Website deployment"
