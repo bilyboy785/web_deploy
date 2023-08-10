@@ -394,19 +394,39 @@ case $1 in
         SQL_DATABASE=$(cat /opt/websites/${PRIMARY_DOMAIN}.env | grep SQL_DATABASE | cut -d\= -f2)
         SQL_USER=$(cat /opt/websites/${PRIMARY_DOMAIN}.env | grep SQL_USER | cut -d\= -f2)
         FTP_USER=$(cat /opt/websites/${PRIMARY_DOMAIN}.env | grep FTP_USER | cut -d\= -f2)
+        PAM_USER=$(cat /opt/websites/${PRIMARY_DOMAIN}.env | grep PAM_USER | cut -d\= -f2)
         HOME_PATH=$(cat /opt/websites/${PRIMARY_DOMAIN}.env | grep HOME_PATH | cut -d\= -f2)
-
-        echo " - Revoking SSL certificate"
-        # certbot delete --cert-name ${PRIMARY_DOMAIN}
-        echo " - Removing Nginx configuration"
-        # rm -f /etc/nginx/sites-enabled/${PRIMARY_DOMAIN}.conf
-        # rm -f /etc/nginx/sites-available/${PRIMARY_DOMAIN}.conf
-        echo " - Removing PHP confguration"
-        PHP_VERS_TO_RELOAD=$(find /etc/php -type f -name "*$PRIMARY_DOMAIN*" | cut -d\/ -f4)
-        # find /etc/php -type f -name "*$PRIMARY_DOMAIN*" -exec rm -f '{}' \;
-        # systemctl restart php${PHP_VERS_TO_RELOAD}-fpm.service
-        echo " - Dumping SQL Database"
-        mysqldump ${SQL_DATABASE} | gzip > /srv/backup/${REMOVAL_DATE}-${PRIMARY_DOMAIN}.sql.gz
+        echo "Database Name : $SQL_DATABASE"
+        echo "Database User : $SQL_USER"
+        echo "FTP User : $FTP_USER"
+        echo "PAM User : $PAM_USER"
+        echo "Home Dir : $HOME_PATH"
+        read -p "We are going to delete all files, database and user for $PRIMARY_DOMAIN, ok ? " DELETE_YES
+        case DELETE_YES in
+            y|yes|o|oui)
+                echo " - Revoking SSL certificate"
+                # certbot delete --cert-name ${PRIMARY_DOMAIN}
+                echo " - Removing Nginx configuration"
+                # rm -f /etc/nginx/sites-enabled/${PRIMARY_DOMAIN}.conf
+                # rm -f /etc/nginx/sites-available/${PRIMARY_DOMAIN}.conf
+                echo " - Removing PHP confguration"
+                PHP_VERS_TO_RELOAD=$(find /etc/php -type f -name "*$PRIMARY_DOMAIN*" | cut -d\/ -f4)
+                # find /etc/php -type f -name "*$PRIMARY_DOMAIN*" -exec rm -f '{}' \;
+                # systemctl restart php${PHP_VERS_TO_RELOAD}-fpm.service
+                echo " - Dumping SQL Database"
+                mysqldump ${SQL_DATABASE} | gzip > /srv/backup/${REMOVAL_DATE}-${PRIMARY_DOMAIN}.sql.gz
+                echo " - Removing SQL Database"
+                mysql -e "DROP DATABASE ${SQL_DATABASE}" >/dev/null 2>&1
+                echo " - Revoking SQL privileges"
+                mysql -e "DROP USER '${SQL_USER}'@'localhost';" >/dev/null 2>&1
+                mysql -e "DROP USER '${SQL_USER}'@'127.0.0.1';" >/dev/null 2>&1
+                echo " - Removing FTP user"
+                sed -i "/${FTP_USER}/d" /etc/proftpd/ftp.passwd
+                ;;
+            *)
+                exit 0
+                ;;
+        esac
         ;;
     deploy|-d|--d)
         echo "## Website deployment"
