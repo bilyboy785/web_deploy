@@ -398,7 +398,7 @@ case $1 in
         # rm -f /etc/nginx/sites-enabled/${PRIMARY_DOMAIN}.conf
         # rm -f /etc/nginx/sites-available/${PRIMARY_DOMAIN}.conf
         echo " - Removing PHP confguration"
-        PHP_VERS_TO_RELOAD=$(find /etc/php -type f -name "*$PRIMARY_DOMAIN*" | cut -d\/ -f3)
+        PHP_VERS_TO_RELOAD=$(find /etc/php -type f -name "*$PRIMARY_DOMAIN*" | cut -d\/ -f4)
         echo $PHP_VERS_TO_RELOAD
         ;;
     deploy|-d|--d)
