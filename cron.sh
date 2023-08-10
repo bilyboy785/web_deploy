@@ -284,6 +284,10 @@ case $1 in
         do
             if [[ -f /var/www/html/$site/web/wp-config.php ]]; then
                 echo "Site wordpress --> $site"
+                FULL_PATH="/var/www/html/$site/web"
+                OWNER=$(stat -c "%U" ${WEB_PATH})
+                echo "*/15 * * * * MAILTO=\"\" RID=\`uuidgen\` && curl -fsS -m 10 --retry 5 -o /dev/null ${HEALTHCHECK_UPDATE_URL}/start?rid=\$RID && /usr/local/bin/wp --path=${WEBROOT_PATH} cron event run --due-now && curl -fsS -m 10 --retry 5 -o /dev/null ${HEALTHCHECK_UPDATE_URL}?rid=\$RID" | crontab -u ${FULL_PATH} -
+                exit 0
             fi
         done
         ;;
