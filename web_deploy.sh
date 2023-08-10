@@ -391,10 +391,6 @@ case $1 in
         SQL_USER=$(cat /opt/websites/${PRIMARY_DOMAIN}.env | grep SQL_USER | cut -d\= -f2)
         FTP_USER=$(cat /opt/websites/${PRIMARY_DOMAIN}.env | grep FTP_USER | cut -d\= -f2)
         HOME_PATH=$(cat /opt/websites/${PRIMARY_DOMAIN}.env | grep HOME_PATH | cut -d\= -f2)
-        for file in $(find /etc -type f -name "*$PRIMARY_DOMAIN*")
-        do
-            echo "File found : $file"
-        done
 
         echo " - Revoking SSL certificate"
         # certbot delete --cert-name ${PRIMARY_DOMAIN}
@@ -402,7 +398,8 @@ case $1 in
         # rm -f /etc/nginx/sites-enabled/${PRIMARY_DOMAIN}.conf
         # rm -f /etc/nginx/sites-available/${PRIMARY_DOMAIN}.conf
         echo " - Removing PHP confguration"
-        find /etc/php -type f -name "*$PRIMARY_DOMAIN*"
+        PHP_VERS_TO_RELOAD=$(find /etc/php -type f -name "*$PRIMARY_DOMAIN*" | cut -d\/ -f3)
+        echo $PHP_VERS_TO_RELOAD
         ;;
     deploy|-d|--d)
         echo "## Website deployment"
