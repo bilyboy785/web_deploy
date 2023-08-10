@@ -408,7 +408,7 @@ case $1 in
                 rm -f /etc/nginx/sites-enabled/${PRIMARY_DOMAIN}.conf
                 rm -f /etc/nginx/sites-available/${PRIMARY_DOMAIN}.conf
                 echo " - Revoking SSL certificate"
-                certbot delete --cert-name ${PRIMARY_DOMAIN}
+                certbot delete -n --cert-name ${PRIMARY_DOMAIN}
                 echo " - Reloading Nginx"
                 systemctl reload nginx.service
                 if [[ -f /etc/nginx/rewrites/${PRIMARY_DOMAIN}.conf ]]; then
