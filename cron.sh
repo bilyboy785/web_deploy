@@ -283,10 +283,10 @@ case $1 in
         for site in $(ls /var/www/html)
         do
             if [[ -f /var/www/html/$site/web/wp-config.php ]]; then
-                echo "Updating cron for $site"
                 FULL_PATH="/var/www/html/$site/web"
                 OWNER=$(stat -c "%U" ${FULL_PATH})
                 SITE_NAME=$(echo $site | sed 's/www\.//g')
+                echo "Updating cron for $SITE_NAME"
                 HC_PING_URL=$(curl -s -X GET --header "X-Api-Key: PFyzt8uS_se--zYpr5KcJlendT-V5cek" "https://healthchecks.bldwebagency.fr/api/v3/checks/" | jq -r '.checks[] | select(.name | contains("'$SITE_NAME'"))' | jq -r '.ping_url')
                 if [[ -z ${HC_PING_URL} ]]; then
                     echo "$site --> Healthcheck not found !!"
