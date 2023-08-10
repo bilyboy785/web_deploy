@@ -1,5 +1,6 @@
 #!/bin/bash
 SRVHOSTNAME=$(hostname -s)
+export SHORT_HOSTNAME=$(hostname -s)
 TG_CHADID=$(cat /root/.telegram.secrets | grep CHATID | cut -d\= -f2 | sed 's/\"//g')
 TG_TOKEN=$(cat /root/.telegram.secrets | grep TOKEN | cut -d\= -f2 | sed 's/\"//g')
 
@@ -286,13 +287,18 @@ case $1 in
                 FULL_PATH="/var/www/html/$site/web"
                 OWNER=$(stat -c "%U" ${FULL_PATH})
                 SITE_NAME=$(echo $site | sed 's/www\.//g')
+                FTP_DOMAIN=$(echo $site | sed 's/www\.//g' | sed 's/demo1\.//g' | sed 's/demo2\.//g' | sed 's/demo3\.//g' | sed 's/dev\.//g')
+                HEALTHCHECK_SLUG_TMP=$(echo $site | sed 's/\.//g')
+                HEALTHCHECK_SLUG="wp-cron-${HEALTHCHECK_SLUG_TMP}"
                 echo "Updating cron for $SITE_NAME"
                 HC_PING_URL=$(curl -s -X GET --header "X-Api-Key: PFyzt8uS_se--zYpr5KcJlendT-V5cek" "https://healthchecks.bldwebagency.fr/api/v3/checks/" | jq -r '.checks[] | select(.name | contains("'$SITE_NAME'"))' | jq -r '.ping_url')
                 if [[ -z ${HC_PING_URL} ]]; then
-                    echo "$site --> Healthcheck not found !!"
-                else
-                    echo -e "MAILTO=\"\"\n*/15 * * * *  RID=\`uuidgen\` && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL}/start?rid=\$RID && /usr/local/bin/wp --path=${FULL_PATH} cron event run --due-now && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL}?rid=\$RID" | crontab -u ${OWNER} -
+                    echo "$site --> Healthcheck not found, creating..."
+                    HC_PING_URL=$(curl -s -X POST "https://healthchecks.bldwebagency.fr/api/v3/checks/" --header "X-Api-Key: PFyzt8uS_se--zYpr5KcJlendT-V5cek" \
+                            --data '{"name": "[WP Cron] '${FTP_DOMAIN}'", "slug": "'${HEALTHCHECK_SLUG}'", "tags": "'${SHORT_HOSTNAME}'", "timeout": 900, "grace": 1800, "channels": "*"}' | jq -r '.ping_url')
+                    echo "  Ping URL : $HC_PING_URL"
                 fi
+                echo -e "MAILTO=\"\"\n*/15 * * * *  RID=\`uuidgen\` && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL}/start?rid=\$RID && /usr/local/bin/wp --path=${FULL_PATH} cron event run --due-now && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL}?rid=\$RID" | crontab -u ${OWNER} -
             fi
         done
         ;;
