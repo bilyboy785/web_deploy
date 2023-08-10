@@ -689,13 +689,24 @@ case $1 in
                         ;;
                 esac
 
+                read -p "Souhaitez-vous ajouter le domaine à Updown ? " DEPLOY_UPDOWN
+                case $DEPLOY_HEALTHCHECK in
+                    yes|y|YES|Y|o|O|oui|OUI)
+                        echo " - Ajout du site sur Updown"
+                        UPDOWN_URL=$(curl -s https://updown.io/api/checks\?api-key\=Vy4Dw9BD35jU7eFMzWwg | jq '.[] | select(.alias | contains("'${FTP_DOMAIN}'"))' | jq -r '.url')
+                        ;;
+                    *)
+                        ;;
+                esac
+
+
                 read -p "Souhaitez-vous déployer le cron Wordpress ? " DEPLOY_CRONWP
                 case $DEPLOY_CRONWP in
                     yes|y|YES|Y|o|O|oui|OUI)
                         case $DEPLOY_HEALTHCHECK in
                             yes|y|YES|Y|o|O|oui|OUI)
                                 echo " - Génération du cron"
-                                echo "*/15 * * * * MAILTO=\"\" RID=\`uuidgen\` && curl -fsS -m 10 --retry 5 -o /dev/null ${HEALTHCHECK_UPDATE_URL}/start?rid=\$RID && /usr/local/bin/wp --path=${WEBROOT_PATH} cron event run --due-now && curl -fsS -m 10 --retry 5 -o /dev/null ${HEALTHCHECK_UPDATE_URL}?rid=\$RID" | crontab -u ${PAM_USER} -
+                                echo -e "MAILTO=\"\"\n*/15 * * * *  RID=\`uuidgen\` && curl -fsS -m 10 --retry 5 -o /dev/null ${HEALTHCHECK_UPDATE_URL}/start?rid=\$RID && /usr/local/bin/wp --path=${WEBROOT_PATH} cron event run --due-now && curl -fsS -m 10 --retry 5 -o /dev/null ${HEALTHCHECK_UPDATE_URL}?rid=\$RID" | crontab -u ${OWNER} -
                                 ;;
                             *)
                                 echo " - Génération du cron"
