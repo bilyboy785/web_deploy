@@ -388,6 +388,8 @@ case $1 in
             read -p "Nom de domaine à déployer : " DOMAIN_NAME
         fi
         FTP_DOMAIN=$(echo $DOMAIN_NAME | sed 's/www\.//g' | sed 's/demo1\.//g' | sed 's/demo2\.//g' | sed 's/demo3\.//g' | sed 's/dev\.//g')
+        HEALTHCHECK_SLUG_TMP=$(echo $DOMAIN_NAME | sed 's/\.//g')
+        HEALTHCHECK_SLUG="wp-cron-${HEALTHCHECK_SLUG_TMP}"
         PRIMARY_DOMAIN=${DOMAIN_NAME}
         echo $DOMAIN_NAME | grep "www." > /dev/null 2>&1
         if [[ $? -eq 0 ]]; then
@@ -607,22 +609,30 @@ case $1 in
                         ;;
                 esac
 
-                read -p "Souhaitez-vous déployer le cron Wordpress ? " DEPLOY_CRONWP
-                case $DEPLOY_CRONWP in
+                read -p "Souhaitez-vous déployer un Healthchecks ? " DEPLOY_HEALTHCHECK
+                case $DEPLOY_HEALTHCHECK in
                     yes|y|YES|Y|o|O|oui|OUI)
-                        echo " - Génération du cron"
-                        echo "*/15 * * * * MAILTO=\"\" /usr/local/bin/wp --path=${WEBROOT_PATH} cron event run --due-now" | crontab -u ${PAM_USER} -
+                        echo " - Création du healthcheck"
+                        HEALTHCHECK_UPDATE_URL=$(curl -s -X POST "https://healthchecks.bldwebagency.fr/api/v3/checks/" --header "X-Api-Key: PFyzt8uS_se--zYpr5KcJlendT-V5cek" \
+                            --data '{"name": "[WP Cron] '${FTP_DOMAIN}'", "slug": "'${HEALTHCHECK_SLUG}'", "tags": "'${SHORT_HOSTNAME}'", "timeout": 900, "grace": 1800, "channels": "*"}' | jq -r '.update_url')
                         ;;
                     *)
                         ;;
                 esac
 
-                read -p "Souhaitez-vous déployer un Healthchecks ? " DEPLOY_HEALTHCHECK
-                case $DEPLOY_HEALTHCHECK in
+                read -p "Souhaitez-vous déployer le cron Wordpress ? " DEPLOY_CRONWP
+                case $DEPLOY_CRONWP in
                     yes|y|YES|Y|o|O|oui|OUI)
-                        echo " - Création du healthcheck"
-                        curl -s -X POST "https://healthchecks.bldwebagency.fr/api/v3/checks/" --header "X-Api-Key: PFyzt8uS_se--zYpr5KcJlendT-V5cek" \
-                            --data '{"name": "'${FTP_DOMAIN}'", "tags": "'${SHORT_HOSTNAME}'", "timeout": 900, "grace": 1800}'
+                        case $DEPLOY_HEALTHCHECK in
+                            yes|y|YES|Y|o|O|oui|OUI)
+                                echo " - Génération du cron"
+                                echo "*/15 * * * * MAILTO=\"\" RID=\`uuidgen\` && curl -fsS -m 10 --retry 5 -o /dev/null ${HEALTHCHECK_UPDATE_URL}/start?rid=\$RID && /usr/local/bin/wp --path=${WEBROOT_PATH} cron event run --due-now && curl -fsS -m 10 --retry 5 -o /dev/null ${HEALTHCHECK_UPDATE_URL}?rid=\$RID" | crontab -u ${PAM_USER} -
+                                ;;
+                            *)
+                                echo " - Génération du cron"
+                                echo "*/15 * * * * MAILTO=\"\" /usr/local/bin/wp --path=${WEBROOT_PATH} cron event run --due-now" | crontab -u ${PAM_USER} -
+                                ;;
+                        esac
                         ;;
                     *)
                         ;;
