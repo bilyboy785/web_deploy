@@ -11,6 +11,7 @@ export SCRIPT_DIR_NAME=$(dirname "$(readlink -f "$0")")
 export PHP_VERSIONS=(7.4 8.0 8.1 8.2)
 export DEFAULT_PHP_VERSION="8.2"
 export HOSTNAME=$(cat /etc/hostname)
+export SHORT_HOSTNAME=$(hostname -s)
 case $DISTRIB_ARCH in 
     x86_64)
         export DISRIB_ARCH="amd64"
@@ -504,7 +505,7 @@ case $1 in
                 case $INSTALL_TYPE in
                     php|wordpress)
                         echo " - Déploiement du pool FPM"
-                        curl -s -H 'Cache-Control: no-cache, no-store' "https://raw.githubusercontent.com/bilyboy785/public/main/php/pool.tmpl.j2?$(date +%s)" -o /tmp/pool.tmpl.j2
+                        curl -s -H 'Cache-Control: no-cache, no-store' "https://raw.githubusercontent.com/bilyboy785/public/main/php/pool.tmpl.j2" -o /tmp/pool.tmpl.j2
                         j2 /tmp/pool.tmpl.j2 > /etc/php/${PHP_VERSION}/fpm/pool.d/${PRIMARY_DOMAIN}.conf
                         rm -f /tmp/pool.tmpl.j2
                         systemctl restart php${PHP_VERSION}-fpm.service > /dev/null 2>&1
@@ -515,7 +516,7 @@ case $1 in
                 esac
 
                 echo " - Déploiement du vhost Nginx"
-                curl -s -H 'Cache-Control: no-cache, no-store' "https://raw.githubusercontent.com/bilyboy785/public/main/nginx/tmpl/vhost.j2?$(date +%s)" -o /tmp/vhost.tmpl.j2
+                curl -s -H 'Cache-Control: no-cache, no-store' "https://raw.githubusercontent.com/bilyboy785/public/main/nginx/tmpl/vhost.j2" -o /tmp/vhost.tmpl.j2
                 j2 /tmp/vhost.tmpl.j2 > /etc/nginx/sites-available/${PRIMARY_DOMAIN}.conf
                 rm -f /tmp/vhost.tmpl.j2
                 systemctl reload nginx.service > /dev/null 2>&1
@@ -611,6 +612,17 @@ case $1 in
                     yes|y|YES|Y|o|O|oui|OUI)
                         echo " - Génération du cron"
                         echo "*/15 * * * * MAILTO=\"\" /usr/local/bin/wp --path=${WEBROOT_PATH} cron event run --due-now" | crontab -u ${PAM_USER} -
+                        ;;
+                    *)
+                        ;;
+                esac
+
+                read -p "Souhaitez-vous déployer un Healthchecks ? " DEPLOY_HEALTHCHECK
+                case $DEPLOY_HEALTHCHECK in
+                    yes|y|YES|Y|o|O|oui|OUI)
+                        echo " - Création du healthcheck"
+                        curl -s -X POST "https://healthchecks.bldwebagency.fr/api/v3/checks/" --header "X-Api-Key: PFyzt8uS_se--zYpr5KcJlendT-V5cek" \
+                            --data '{"name": "'${FTP_DOMAIN}'", "tags": "'${SHORT_HOSTNAME}'", "timeout": 900, "grace": 1800}'
                         ;;
                     *)
                         ;;
