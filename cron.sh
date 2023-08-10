@@ -286,10 +286,12 @@ case $1 in
                 echo "Updating cron for $site"
                 FULL_PATH="/var/www/html/$site/web"
                 OWNER=$(stat -c "%U" ${FULL_PATH})
-                UPDATE_URL_HC=$(curl -s -X GET --header "X-Api-Key: PFyzt8uS_se--zYpr5KcJlendT-V5cek" "https://healthchecks.bldwebagency.fr/api/v3/checks/")
-                HC_PING_URL=$(echo $UPDATE_URL_HC | jq -r '.checks[] | select(.name | contains("'$site'"))' | jq -r '.ping_url')
-                echo -e "MAILTO=\"\"\n*/15 * * * *  RID=\`uuidgen\` && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL}/start?rid=\$RID && /usr/local/bin/wp --path=${FULL_PATH} cron event run --due-now && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL}?rid=\$RID" | crontab -u ${OWNER} -
-                exit 0
+                HC_PING_URL=$(curl -s -X GET --header "X-Api-Key: PFyzt8uS_se--zYpr5KcJlendT-V5cek" "https://healthchecks.bldwebagency.fr/api/v3/checks/" | jq -r '.checks[] | select(.name | contains("'$site'"))' | jq -r '.ping_url')
+                if [[ -z ${HC_PING_URL} ]]; then
+                    echo "$site --> Healthcheck not found !!"
+                else
+                    echo -e "MAILTO=\"\"\n*/15 * * * *  RID=\`uuidgen\` && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL}/start?rid=\$RID && /usr/local/bin/wp --path=${FULL_PATH} cron event run --due-now && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL}?rid=\$RID" | crontab -u ${OWNER} -
+                fi
             fi
         done
         ;;
