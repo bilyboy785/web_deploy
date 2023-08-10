@@ -287,7 +287,7 @@ case $1 in
                 FULL_PATH="/var/www/html/$site/web"
                 OWNER=$(stat -c "%U" ${FULL_PATH})
                 UPDATE_URL_HC=$(curl -s -X GET --header "X-Api-Key: PFyzt8uS_se--zYpr5KcJlendT-V5cek" "https://healthchecks.bldwebagency.fr/api/v3/checks/")
-                echo $UPDATE_URL_HC | jq '.'
+                echo $UPDATE_URL_HC | jq -r '.checks[] | select(.name | contains("'$site'"))' | jq '.update_url'
                 #echo "*/15 * * * * MAILTO=\"\" RID=\`uuidgen\` && curl -fsS -m 10 --retry 5 -o /dev/null ${HEALTHCHECK_UPDATE_URL}/start?rid=\$RID && /usr/local/bin/wp --path=${WEBROOT_PATH} cron event run --due-now && curl -fsS -m 10 --retry 5 -o /dev/null ${HEALTHCHECK_UPDATE_URL}?rid=\$RID" | crontab -u ${OWNER} -
                 exit 0
             fi
