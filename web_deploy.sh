@@ -387,6 +387,7 @@ case $1 in
         FTP_DOMAIN=$(echo $DOMAIN_NAME | sed 's/www\.//g' | sed 's/demo1\.//g' | sed 's/demo2\.//g' | sed 's/demo3\.//g' | sed 's/dev\.//g')
         PRIMARY_DOMAIN=${DOMAIN_NAME}
         echo " -> Removing $PRIMARY_DOMAIN - $FTP_DOMAIN"
+        cat /opt/websites/${PRIMARY_DOMAIN}.env
         ;;
     deploy|-d|--d)
         echo "## Website deployment"
