@@ -286,7 +286,8 @@ case $1 in
                 echo "Updating cron for $site"
                 FULL_PATH="/var/www/html/$site/web"
                 OWNER=$(stat -c "%U" ${FULL_PATH})
-                HC_PING_URL=$(curl -s -X GET --header "X-Api-Key: PFyzt8uS_se--zYpr5KcJlendT-V5cek" "https://healthchecks.bldwebagency.fr/api/v3/checks/" | jq -r '.checks[] | select(.name | contains("'$site'"))' | jq -r '.ping_url')
+                SITE_NAME=$(echo $site | sed 's/www\.//g')
+                HC_PING_URL=$(curl -s -X GET --header "X-Api-Key: PFyzt8uS_se--zYpr5KcJlendT-V5cek" "https://healthchecks.bldwebagency.fr/api/v3/checks/" | jq -r '.checks[] | select(.name | contains("'$SITE_NAME'"))' | jq -r '.ping_url')
                 if [[ -z ${HC_PING_URL} ]]; then
                     echo "$site --> Healthcheck not found !!"
                 else
