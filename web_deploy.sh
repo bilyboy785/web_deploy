@@ -693,7 +693,9 @@ case $1 in
                 case $DEPLOY_HEALTHCHECK in
                     yes|y|YES|Y|o|O|oui|OUI)
                         echo " - Ajout du site sur Updown"
-                        UPDOWN_URL=$(curl -s https://updown.io/api/checks\?api-key\=Vy4Dw9BD35jU7eFMzWwg | jq '.[] | select(.alias | contains("'${FTP_DOMAIN}'"))' | jq -r '.url')
+                        UPDOWN_CHECK=$(curl -s -X POST -d "url=https://${PRIMARY_DOMAIN}" -d "period=600" -d "alias=${FTP_DOMAIN}" -d "http_verbe='GET/HEAD'" -d "recipients[]=telegram:1830694333" -d "apdex_t=1" -d \
+                                "disabled_locations[]=lan&disabled_locations[]=mia&disabled_locations[]=bhs&disabled_locations[]=sin&disabled_locations[]=tok&disabled_locations[]=syd" -d "string_match=200" \
+                                https://updown.io/api/checks?api-key=Vy4Dw9BD35jU7eFMzWwg | jq '.token')
                         ;;
                     *)
                         ;;
@@ -710,7 +712,7 @@ case $1 in
                                 ;;
                             *)
                                 echo " - Génération du cron"
-                                echo "*/15 * * * * MAILTO=\"\" /usr/local/bin/wp --path=${WEBROOT_PATH} cron event run --due-now" | crontab -u ${PAM_USER} -
+                                echo -e "MAILTO=\"\"\n*/15 * * * * /usr/local/bin/wp --path=${WEBROOT_PATH} cron event run --due-now" | crontab -u ${PAM_USER} -
                                 ;;
                         esac
                         ;;
