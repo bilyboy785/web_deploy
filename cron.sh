@@ -323,6 +323,7 @@ case $1 in
             # fi
             # echo -e "MAILTO=\"\"\n*/15 * * * *  RID=\`uuidgen\` && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL}/start?rid=\$RID && /usr/local/bin/wp --path=${FULL_PATH} cron event run --due-now && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL}?rid=\$RID" | crontab -u ${OWNER} -
         done
+        ;;
 
 
         
