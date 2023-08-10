@@ -438,8 +438,8 @@ case $1 in
                     fi
                 fi
                 echo " - Deleting User & Group"
-                userdel ${PAM_USER}
-                groupdel ${PAM_USER}
+                userdel ${PAM_USER} >/dev/null 2>&1
+                groupdel ${PAM_USER} >/dev/null 2>&1
                 ;;
             *)
                 exit 0
