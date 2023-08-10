@@ -395,6 +395,14 @@ case $1 in
         do
             echo "File found : $file"
         done
+
+        echo " - Revoking SSL certificate"
+        # certbot delete --cert-name ${PRIMARY_DOMAIN}
+        echo " - Removing Nginx configuration"
+        # rm -f /etc/nginx/sites-enabled/${PRIMARY_DOMAIN}.conf
+        # rm -f /etc/nginx/sites-available/${PRIMARY_DOMAIN}.conf
+        echo " - Removing PHP confguration"
+        find /etc/php -type f -name "*$PRIMARY_DOMAIN*"
         ;;
     deploy|-d|--d)
         echo "## Website deployment"
