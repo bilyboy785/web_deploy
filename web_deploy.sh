@@ -402,17 +402,22 @@ case $1 in
         echo "PAM User : $PAM_USER"
         echo "Home Dir : $HOME_PATH"
         read -p "We are going to delete all files, database and user for $PRIMARY_DOMAIN, ok ? " DELETE_YES
-        case DELETE_YES in
+        case $DELETE_YES in
             y|yes|o|oui)
-                echo " - Revoking SSL certificate"
-                # certbot delete --cert-name ${PRIMARY_DOMAIN}
                 echo " - Removing Nginx configuration"
-                # rm -f /etc/nginx/sites-enabled/${PRIMARY_DOMAIN}.conf
-                # rm -f /etc/nginx/sites-available/${PRIMARY_DOMAIN}.conf
+                rm -f /etc/nginx/sites-enabled/${PRIMARY_DOMAIN}.conf
+                rm -f /etc/nginx/sites-available/${PRIMARY_DOMAIN}.conf
+                echo " - Revoking SSL certificate"
+                certbot delete --cert-name ${PRIMARY_DOMAIN}
+                echo " - Reloading Nginx"
+                systemctl reload nginx.service
+                if [[ -f /etc/nginx/rewrites/${PRIMARY_DOMAIN}.conf ]]; then
+                    rm -f /etc/nginx/rewrites/${PRIMARY_DOMAIN}.conf
+                fi
                 echo " - Removing PHP confguration"
                 PHP_VERS_TO_RELOAD=$(find /etc/php -type f -name "*$PRIMARY_DOMAIN*" | cut -d\/ -f4)
-                # find /etc/php -type f -name "*$PRIMARY_DOMAIN*" -exec rm -f '{}' \;
-                # systemctl restart php${PHP_VERS_TO_RELOAD}-fpm.service
+                find /etc/php -type f -name "*$PRIMARY_DOMAIN*" -exec rm -f '{}' \;
+                systemctl restart php${PHP_VERS_TO_RELOAD}-fpm.service
                 echo " - Dumping SQL Database"
                 mysqldump ${SQL_DATABASE} | gzip > /srv/backup/${REMOVAL_DATE}-${PRIMARY_DOMAIN}.sql.gz
                 echo " - Removing SQL Database"
@@ -422,6 +427,19 @@ case $1 in
                 mysql -e "DROP USER '${SQL_USER}'@'127.0.0.1';" >/dev/null 2>&1
                 echo " - Removing FTP user"
                 sed -i "/${FTP_USER}/d" /etc/proftpd/ftp.passwd
+                echo " - Restarting FTP Service"
+                systemctl restart proftpd.service
+                echo " - Archiving Web folder"
+                tar czf /srv/backup/${REMOVAL_DATE}-${PRIMARY_DOMAIN}.tgz ${HOME_PATH}/web >/dev/null 2>&1
+                echo " - Deleting Web Folder"
+                if [[ ! -z ${PRIMARY_DOMAIN} ]]; then
+                    if [[ -d /var/www/html/${PRIMARY_DOMAIN} ]]; then
+                        rm -Rf /var/www/html/${PRIMARY_DOMAIN}
+                    fi
+                fi
+                echo " - Deleting User & Group"
+                userdel ${PAM_USER}
+                groupdel ${PAM_USER}
                 ;;
             *)
                 exit 0
