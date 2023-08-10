@@ -287,8 +287,8 @@ case $1 in
                 FULL_PATH="/var/www/html/$site/web"
                 OWNER=$(stat -c "%U" ${FULL_PATH})
                 UPDATE_URL_HC=$(curl -s -X GET --header "X-Api-Key: PFyzt8uS_se--zYpr5KcJlendT-V5cek" "https://healthchecks.bldwebagency.fr/api/v3/checks/")
-                HC_UPDATE_URL=$(echo $UPDATE_URL_HC | jq -r '.checks[] | select(.name | contains("'$site'"))' | jq -r '.update_url')
-                echo -e "MAILTO=\"\"\n */2 * * * *  RID=\`uuidgen\` && curl -fsS -m 10 --retry 5 -o /dev/null '${HC_UPDATE_URL}/start?rid=\$RID' && /usr/local/bin/wp --path=${WEBROOT_PATH} cron event run --due-now && curl -fsS -m 10 --retry 5 -o /dev/null '${HC_UPDATE_URL}?rid=\$RID'" | crontab -u ${OWNER} -
+                HC_PING_URL=$(echo $UPDATE_URL_HC | jq -r '.checks[] | select(.name | contains("'$site'"))' | jq -r '.ping_url')
+                echo -e "MAILTO=\"\"\n */2 * * * *  RID=\`uuidgen\` && curl -fsS -m 10 --retry 5 -o /dev/null '${HC_PING_URL}/start?rid=\$RID' && /usr/local/bin/wp --path=${WEBROOT_PATH} cron event run --due-now && curl -fsS -m 10 --retry 5 -o /dev/null '${HC_PING_URL}?rid=\$RID'" | crontab -u ${OWNER} -
                 exit 0
             fi
         done
