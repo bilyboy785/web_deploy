@@ -334,7 +334,7 @@ case $1 in
         fi
         ;;
     cron)
-        site=$1
+        site=$2
         FULL_PATH="/var/www/html/$site/web"
         OWNER=$(stat -c "%U" ${FULL_PATH})
         echo "$site --> $OWNER"
