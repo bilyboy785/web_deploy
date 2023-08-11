@@ -333,9 +333,12 @@ case $1 in
             done
         fi
         ;;
-
-
-        
+    cron)
+        site=$1
+        FULL_PATH="/var/www/html/$site/web"
+        OWNER=$(stat -c "%U" ${FULL_PATH})
+        echo "$site --> $OWNER"
+        ;;
     *)
         ;;
 esac
