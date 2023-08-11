@@ -334,10 +334,16 @@ case $1 in
         fi
         ;;
     cron)
-        site=$2
-        FULL_PATH="/var/www/html/$site/web"
+        SITE_NAME=$2
+        FULL_PATH="/var/www/html/${SITE_NAME}/web"
         OWNER=$(stat -c "%U" ${FULL_PATH})
-        echo "$site --> $OWNER"
+        FTP_DOMAIN=$(echo ${SITE_NAME} | sed 's/www\.//g' | sed 's/demo1\.//g' | sed 's/demo2\.//g' | sed 's/demo3\.//g' | sed 's/dev\.//g')
+        echo "Deploying Wordpress cron for $OWNER"
+        if [[ -z ${HC_PING_URL} ]]; then
+            echo "${SITE_NAME} --> Healthcheck not found, creating..."
+            HC_PING_URL=$(curl -s -X GET --header "X-Api-Key: PFyzt8uS_se--zYpr5KcJlendT-V5cek" "https://healthchecks.bldwebagency.fr/api/v3/checks/" | jq -r '.checks[] | select(.name | contains("'${SITE_NAME}'"))' | jq -r '.ping_url')
+        fi
+        echo -e "MAILTO=\"\"\n*/15 * * * *  RID=\`uuidgen\` && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL}/start?rid=\$RID && /usr/local/bin/wp --path=${WEBROOT_PATH} cron event run --due-now && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL}?rid=\$RID" | crontab -u ${OWNER} -
         ;;
     *)
         ;;

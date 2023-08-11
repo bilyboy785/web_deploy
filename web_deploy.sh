@@ -708,7 +708,7 @@ case $1 in
                         case $DEPLOY_HEALTHCHECK in
                             yes|y|YES|Y|o|O|oui|OUI)
                                 echo " - Génération du cron"
-                                echo -e "MAILTO=\"\"\n*/15 * * * *  RID=\`uuidgen\` && curl -fsS -m 10 --retry 5 -o /dev/null ${HEALTHCHECK_UPDATE_URL}/start?rid=\$RID && /usr/local/bin/wp --path=${WEBROOT_PATH} cron event run --due-now && curl -fsS -m 10 --retry 5 -o /dev/null ${HEALTHCHECK_UPDATE_URL}?rid=\$RID" | crontab -u ${OWNER} -
+                                echo -e "MAILTO=\"\"\n*/15 * * * *  RID=\`uuidgen\` && curl -fsS -m 10 --retry 5 -o /dev/null ${HEALTHCHECK_UPDATE_URL}/start?rid=\$RID && /usr/local/bin/wp --path=${WEBROOT_PATH} cron event run --due-now && curl -fsS -m 10 --retry 5 -o /dev/null ${HEALTHCHECK_UPDATE_URL}?rid=\$RID" | crontab -u ${PAM_USER} -
                                 ;;
                             *)
                                 echo " - Génération du cron"
