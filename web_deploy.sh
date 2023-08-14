@@ -429,8 +429,15 @@ case $1 in
                 # sed -i "/${FTP_USER}/d" /etc/proftpd/ftp.passwd
                 # echo " - Restarting FTP Service"
                 # systemctl restart proftpd.service
-                echo " - Archiving Web folder"
-                tar czf /srv/backup/${REMOVAL_DATE}-${PRIMARY_DOMAIN}.tgz ${HOME_PATH}/web >/dev/null 2>&1
+                case $@ in
+                        *--no-archive)
+                                echo " - Skipping web folder archive"
+                                ;;
+                        *)
+                                echo " - Archiving Web folder"
+                                tar czf /srv/backup/${REMOVAL_DATE}-${PRIMARY_DOMAIN}.tgz ${HOME_PATH}/web >/dev/null 2>&1
+                                ;;
+                esac
                 echo " - Deleting Web Folder"
                 if [[ ! -z ${PRIMARY_DOMAIN} ]]; then
                     if [[ -d /var/www/html/${PRIMARY_DOMAIN} ]]; then
