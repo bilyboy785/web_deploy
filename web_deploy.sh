@@ -425,10 +425,10 @@ case $1 in
                 echo " - Revoking SQL privileges"
                 mysql -e "DROP USER '${SQL_USER}'@'localhost';" >/dev/null 2>&1
                 mysql -e "DROP USER '${SQL_USER}'@'127.0.0.1';" >/dev/null 2>&1
-                echo " - Removing FTP user"
-                sed -i "/${FTP_USER}/d" /etc/proftpd/ftp.passwd
-                echo " - Restarting FTP Service"
-                systemctl restart proftpd.service
+                # echo " - Removing FTP user"
+                # sed -i "/${FTP_USER}/d" /etc/proftpd/ftp.passwd
+                # echo " - Restarting FTP Service"
+                # systemctl restart proftpd.service
                 echo " - Archiving Web folder"
                 tar czf /srv/backup/${REMOVAL_DATE}-${PRIMARY_DOMAIN}.tgz ${HOME_PATH}/web >/dev/null 2>&1
                 echo " - Deleting Web Folder"
