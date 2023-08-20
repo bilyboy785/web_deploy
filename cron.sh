@@ -296,9 +296,11 @@ case $1 in
             if [[ -z ${HC_PING_URL} ]]; then
                 echo "$SITE_NAME | Healthcheck not found, creating..."
                 HC_PING_URL=$(curl -s -X POST "https://healthchecks.bldwebagency.fr/api/v3/checks/" --header "X-Api-Key: PFyzt8uS_se--zYpr5KcJlendT-V5cek" \
-                        --data '{"name": "[WP Cron] '${FTP_DOMAIN}'", "slug": "'${HEALTHCHECK_SLUG}'", "tags": "'${SHORT_HOSTNAME}'", "timeout": 900, "grace": 1800, "channels": "*"}' | jq -r '.ping_url')
-                echo "  Ping URL : $HC_PING_URL"
-                echo -e "MAILTO=\"\"\n*/15 * * * *  RID=\`uuidgen\` && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL}/start?rid=\$RID && /usr/local/bin/wp --path=${WEB_ROOT} cron event run --due-now && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL}?rid=\$RID" | crontab -u ${OWNER} -
+                        --data '{"name": "[WP Cron] '${FTP_DOMAIN}'", "slug": "'${HEALTHCHECK_SLUG}'", "tags": "'${SHORT_HOSTNAME}'", "timeout": 900, "grace": 1800, "channels": "*"}')
+                echo $HC_PING_URL | jq '.'
+                HC_PING_URL_RESULT=$(echo $HC_PING_URL | jq -r '.ping_url')
+                echo "  Ping URL : $HC_PING_URL_RESULT"
+                echo -e "MAILTO=\"\"\n*/15 * * * *  RID=\`uuidgen\` && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL_RESULT}/start?rid=\$RID && /usr/local/bin/wp --path=${WEB_ROOT} cron event run --due-now && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL_RESULT}?rid=\$RID" | crontab -u ${OWNER} -
             # else
             #     echo "$SITE_NAME | Healthcheck already exists !"
             fi
