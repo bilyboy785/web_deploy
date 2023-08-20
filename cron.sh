@@ -284,31 +284,46 @@ case $1 in
         for site in $(find /var/www/html -maxdepth 4 -type f -name "wp-config.php")
         do
             SITE_NAME=$(echo $site  | cut -d\/ -f5)
+            BASE_SITE_NAME=$(echo $site | sed 's/www\.//g')
+            FTP_DOMAIN=$(echo $site | sed 's/www\.//g' | sed 's/demo1\.//g' | sed 's/demo2\.//g' | sed 's/demo3\.//g' | sed 's/dev\.//g')
             WEB_ROOT=$(dirname "${site}")
+            HEALTHCHECK_SLUG_TMP=$(echo $site | sed 's/\.//g')
+            HEALTHCHECK_SLUG="wp-cron-${HEALTHCHECK_SLUG_TMP}"
+            OWNER=$(stat -c "%U" ${WEB_ROOT})
             echo "# Checking for ${SITE_NAME} (root : $WEB_ROOT)"
-        done
-        exit 0
-
-        for site in $(ls /var/www/html)
-        do
-            if [[ -f /var/www/html/$site/web/wp-config.php ]]; then
-                FULL_PATH="/var/www/html/$site/web"
-                OWNER=$(stat -c "%U" ${FULL_PATH})
-                SITE_NAME=$(echo $site | sed 's/www\.//g')
-                FTP_DOMAIN=$(echo $site | sed 's/www\.//g' | sed 's/demo1\.//g' | sed 's/demo2\.//g' | sed 's/demo3\.//g' | sed 's/dev\.//g')
-                HEALTHCHECK_SLUG_TMP=$(echo $site | sed 's/\.//g')
-                HEALTHCHECK_SLUG="wp-cron-${HEALTHCHECK_SLUG_TMP}"
-                echo "Updating cron for $SITE_NAME"
-                HC_PING_URL=$(curl -s -X GET --header "X-Api-Key: PFyzt8uS_se--zYpr5KcJlendT-V5cek" "https://healthchecks.bldwebagency.fr/api/v3/checks/" | jq -r '.checks[] | select(.name | contains("'$SITE_NAME'"))' | jq -r '.ping_url')
-                if [[ -z ${HC_PING_URL} ]]; then
-                    echo "$site --> Healthcheck not found, creating..."
-                    HC_PING_URL=$(curl -s -X POST "https://healthchecks.bldwebagency.fr/api/v3/checks/" --header "X-Api-Key: PFyzt8uS_se--zYpr5KcJlendT-V5cek" \
-                            --data '{"name": "[WP Cron] '${FTP_DOMAIN}'", "slug": "'${HEALTHCHECK_SLUG}'", "tags": "'${SHORT_HOSTNAME}'", "timeout": 900, "grace": 1800, "channels": "*"}' | jq -r '.ping_url')
-                    echo "  Ping URL : $HC_PING_URL"
-                fi
-                echo -e "MAILTO=\"\"\n*/15 * * * *  RID=\`uuidgen\` && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL}/start?rid=\$RID && /usr/local/bin/wp --path=${FULL_PATH} cron event run --due-now && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL}?rid=\$RID" | crontab -u ${OWNER} -
+            HC_PING_URL=$(curl -s -X GET --header "X-Api-Key: PFyzt8uS_se--zYpr5KcJlendT-V5cek" "https://healthchecks.bldwebagency.fr/api/v3/checks/" | jq -r '.checks[] | select(.name | contains("'$BASE_SITE_NAME'"))' | jq -r '.ping_url')
+            if [[ -z ${HC_PING_URL} ]]; then
+                echo " - $SITE_NAME -> Healthcheck not found, creating..."
+                HC_PING_URL=$(curl -s -X POST "https://healthchecks.bldwebagency.fr/api/v3/checks/" --header "X-Api-Key: PFyzt8uS_se--zYpr5KcJlendT-V5cek" \
+                        --data '{"name": "[WP Cron] '${FTP_DOMAIN}'", "slug": "'${HEALTHCHECK_SLUG}'", "tags": "'${SHORT_HOSTNAME}'", "timeout": 900, "grace": 1800, "channels": "*"}' | jq -r '.ping_url')
+                echo "  Ping URL : $HC_PING_URL"
+                echo -e "MAILTO=\"\"\n*/15 * * * *  RID=\`uuidgen\` && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL}/start?rid=\$RID && /usr/local/bin/wp --path=${WEB_ROOT} cron event run --due-now && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL}?rid=\$RID" | crontab -u ${OWNER} -
+            else
+                echo " - $SITE_NAME -> Healthcheck already exists !"
             fi
         done
+        # exit 0
+
+        # for site in $(ls /var/www/html)
+        # do
+        #     if [[ -f /var/www/html/$site/web/wp-config.php ]]; then
+        #         FULL_PATH="/var/www/html/$site/web"
+        #         OWNER=$(stat -c "%U" ${FULL_PATH})
+        #         SITE_NAME=$(echo $site | sed 's/www\.//g')
+        #         FTP_DOMAIN=$(echo $site | sed 's/www\.//g' | sed 's/demo1\.//g' | sed 's/demo2\.//g' | sed 's/demo3\.//g' | sed 's/dev\.//g')
+        #         HEALTHCHECK_SLUG_TMP=$(echo $site | sed 's/\.//g')
+        #         HEALTHCHECK_SLUG="wp-cron-${HEALTHCHECK_SLUG_TMP}"
+        #         echo "Updating cron for $SITE_NAME"
+        #         HC_PING_URL=$(curl -s -X GET --header "X-Api-Key: PFyzt8uS_se--zYpr5KcJlendT-V5cek" "https://healthchecks.bldwebagency.fr/api/v3/checks/" | jq -r '.checks[] | select(.name | contains("'$SITE_NAME'"))' | jq -r '.ping_url')
+        #         if [[ -z ${HC_PING_URL} ]]; then
+        #             echo "$site --> Healthcheck not found, creating..."
+        #             HC_PING_URL=$(curl -s -X POST "https://healthchecks.bldwebagency.fr/api/v3/checks/" --header "X-Api-Key: PFyzt8uS_se--zYpr5KcJlendT-V5cek" \
+        #                     --data '{"name": "[WP Cron] '${FTP_DOMAIN}'", "slug": "'${HEALTHCHECK_SLUG}'", "tags": "'${SHORT_HOSTNAME}'", "timeout": 900, "grace": 1800, "channels": "*"}' | jq -r '.ping_url')
+        #             echo "  Ping URL : $HC_PING_URL"
+        #         fi
+        #         echo -e "MAILTO=\"\"\n*/15 * * * *  RID=\`uuidgen\` && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL}/start?rid=\$RID && /usr/local/bin/wp --path=${FULL_PATH} cron event run --due-now && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL}?rid=\$RID" | crontab -u ${OWNER} -
+        #     fi
+        # done
         ;;
     updown)
         if [[ ! -z $2 ]]; then
