@@ -287,7 +287,7 @@ case $1 in
             BASE_SITE_NAME=$(echo $SITE_NAME | sed 's/www\.//g')
             FTP_DOMAIN=$(echo $SITE_NAME | sed 's/www\.//g' | sed 's/demo1\.//g' | sed 's/demo2\.//g' | sed 's/demo3\.//g' | sed 's/dev\.//g')
             WEB_ROOT=$(dirname "${site}")
-            HEALTHCHECK_SLUG_TMP=$(echo $site | sed 's/\.//g')
+            HEALTHCHECK_SLUG_TMP=$(echo $SITE_NAME | sed 's/\.//g')
             HEALTHCHECK_SLUG="wp-cron-${HEALTHCHECK_SLUG_TMP}"
             OWNER=$(stat -c "%U" ${WEB_ROOT})
             #echo "# Checking for ${SITE_NAME} (root : $WEB_ROOT)"
