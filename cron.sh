@@ -283,7 +283,15 @@ case $1 in
     healthcheck)
         for site in $(find /var/www/html -maxdepth 4 -type f -name "wp-config.php")
         do
-            SITE_NAME=$(echo $site  | cut -d\/ -f5)
+            SITE_NAME=$(echo $site | cut -d\/ -f5)
+            echo "## $SITE_NAME"
+            case $SITE_NAME in
+                dtses.bldwebagency.fr)
+                    continue
+                    ;;
+                *)
+                    ;;
+            esac
             BASE_SITE_NAME=$(echo $SITE_NAME | sed 's/www\.//g')
             FTP_DOMAIN=$(echo $SITE_NAME | sed 's/www\.//g' | sed 's/demo1\.//g' | sed 's/demo2\.//g' | sed 's/demo3\.//g' | sed 's/dev\.//g')
             WEB_ROOT=$(dirname "${site}")
