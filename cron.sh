@@ -308,7 +308,7 @@ case $1 in
             else
                 echo "$SITE_NAME | Healthcheck already exists --> $HC_PING_URL"
                 echo " -> Updating cron"
-                echo -e "MAILTO=\"\"\n*/15 * * * *  RID=\`uuidgen\` && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL_RESULT}/start?rid=\$RID && /usr/local/bin/wp --path=${WEB_ROOT} cron event run --due-now && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL_RESULT}?rid=\$RID" | crontab -u ${OWNER} -
+                echo -e "MAILTO=\"\"\n*/15 * * * *  RID=\`uuidgen\` && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL}/start?rid=\$RID && /usr/local/bin/wp --path=${WEB_ROOT} cron event run --due-now && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL}?rid=\$RID" | crontab -u ${OWNER} -
             fi
             if [[ -n $(find ${WEB_ROOT}/wp-content/plugins -type d -name "mailpoet") ]]; then
                 echo "$SITE_NAME | Found mailpoet, adding cron..."
