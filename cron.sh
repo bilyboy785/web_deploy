@@ -303,6 +303,7 @@ case $1 in
             else
                 echo " - $SITE_NAME -> Healthcheck already exists !"
             fi
+            exit 0
         done
         # exit 0
 
