@@ -298,19 +298,21 @@ case $1 in
             HEALTHCHECK_SLUG_TMP=$(echo $SITE_NAME | sed 's/\.//g')
             HEALTHCHECK_SLUG="wp-cron-${HEALTHCHECK_SLUG_TMP}"
             OWNER=$(stat -c "%U" ${WEB_ROOT})
-            #echo "# Checking for ${SITE_NAME} (root : $WEB_ROOT)"
-            #echo " - Searching if HC exists for ${BASE_SITE_NAME}"
             HC_PING_URL=$(curl -s -X GET --header "X-Api-Key: PFyzt8uS_se--zYpr5KcJlendT-V5cek" "https://healthchecks.bldwebagency.fr/api/v3/checks/" | jq -r '.checks[] | select(.name | contains("'$BASE_SITE_NAME'"))' | jq -r '.ping_url')
             if [[ -z ${HC_PING_URL} ]]; then
                 echo "$SITE_NAME | Healthcheck not found, creating..."
                 HC_PING_URL=$(curl -s -X POST "https://healthchecks.bldwebagency.fr/api/v3/checks/" --header "X-Api-Key: PFyzt8uS_se--zYpr5KcJlendT-V5cek" \
                         --data '{"name": "[WP Cron] '${FTP_DOMAIN}'", "slug": "'${HEALTHCHECK_SLUG}'", "tags": "'${SHORT_HOSTNAME}'", "timeout": 900, "grace": 1800, "channels": "*"}')
-                echo $HC_PING_URL | jq '.'
                 HC_PING_URL_RESULT=$(echo $HC_PING_URL | jq -r '.ping_url')
-                echo "  Ping URL : $HC_PING_URL_RESULT"
                 echo -e "MAILTO=\"\"\n*/15 * * * *  RID=\`uuidgen\` && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL_RESULT}/start?rid=\$RID && /usr/local/bin/wp --path=${WEB_ROOT} cron event run --due-now && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL_RESULT}?rid=\$RID" | crontab -u ${OWNER} -
-            # else
-            #     echo "$SITE_NAME | Healthcheck already exists !"
+            else
+                echo "$SITE_NAME | Healthcheck already exists --> $HC_PING_URL"
+                echo " -> Updating cron"
+                echo -e "MAILTO=\"\"\n*/15 * * * *  RID=\`uuidgen\` && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL_RESULT}/start?rid=\$RID && /usr/local/bin/wp --path=${WEB_ROOT} cron event run --due-now && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL_RESULT}?rid=\$RID" | crontab -u ${OWNER} -
+            fi
+            find ${WEB_ROOT}/wp-content/plugins -type d -name "mailpoet"  > /dev/null 2>&1
+            if [[ $? -eq 0 ]]; then
+                echo "$SITE_NAME | Found mailpoet, adding cron..."
             fi
         done
         # exit 0
