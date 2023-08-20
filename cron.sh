@@ -286,7 +286,7 @@ case $1 in
             SITE_NAME=$(echo $site | cut -d\/ -f5)
             echo "## $SITE_NAME"
             case $SITE_NAME in
-                dtses.bldwebagency.fr)
+                dtses.bldwebagency.fr|jerome-tavernier.com)
                     continue
                     ;;
                 *)
