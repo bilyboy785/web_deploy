@@ -292,7 +292,7 @@ case $1 in
             OWNER=$(stat -c "%U" ${WEB_ROOT})
             echo "# Checking for ${SITE_NAME} (root : $WEB_ROOT)"
             HC_PING_URL=$(curl -s -X GET --header "X-Api-Key: PFyzt8uS_se--zYpr5KcJlendT-V5cek" "https://healthchecks.bldwebagency.fr/api/v3/checks/" | jq -r '.checks[] | select(.name | contains("'$BASE_SITE_NAME'"))' | jq -r '.ping_url')
-            echo $?
+            echo $HC_PING_URL
             exit 0
             if [[ -z ${HC_PING_URL} ]]; then
                 echo " - $SITE_NAME -> Healthcheck not found, creating..."
