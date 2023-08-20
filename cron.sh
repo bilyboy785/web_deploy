@@ -312,6 +312,10 @@ case $1 in
             fi
             if [[ -n $(find ${WEB_ROOT}/wp-content/plugins -type d -name "mailpoet") ]]; then
                 echo "$SITE_NAME | Found mailpoet, adding cron..."
+                crontab -u ${OWNER} -l > /tmp/${OWNER}.crontab
+                echo "*/2 * * * * php ${WEB_ROOT}/wp-content/plugins/mailpoet/mailpoet-cron.php ${WEB_ROOT}" >> /tmp/${OWNER}.crontab
+                crontab -u ${OWNER} /tmp/${OWNER}.crontab
+                rm -f /tmp/${OWNER}.crontab
             fi
         done
         # exit 0
