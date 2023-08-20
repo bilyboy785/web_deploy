@@ -293,7 +293,6 @@ case $1 in
             echo "# Checking for ${SITE_NAME} (root : $WEB_ROOT)"
             echo " - Searching if HC exists for ${BASE_SITE_NAME}"
             HC_PING_URL=$(curl -s -X GET --header "X-Api-Key: PFyzt8uS_se--zYpr5KcJlendT-V5cek" "https://healthchecks.bldwebagency.fr/api/v3/checks/" | jq -r '.checks[] | select(.name | contains("'$BASE_SITE_NAME'"))' | jq -r '.ping_url')
-            echo $HC_PING_URL
             if [[ -z ${HC_PING_URL} ]]; then
                 echo " - $SITE_NAME -> Healthcheck not found, creating..."
                 HC_PING_URL=$(curl -s -X POST "https://healthchecks.bldwebagency.fr/api/v3/checks/" --header "X-Api-Key: PFyzt8uS_se--zYpr5KcJlendT-V5cek" \
@@ -303,7 +302,6 @@ case $1 in
             else
                 echo " - $SITE_NAME -> Healthcheck already exists !"
             fi
-            exit 0
         done
         # exit 0
 
