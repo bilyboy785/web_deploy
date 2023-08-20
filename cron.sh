@@ -281,7 +281,7 @@ case $1 in
                         -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" | /root/.local/bin/jq '.result[] | select(.ip == "'${IP}'")' | /root/.local/bin/jq -r '.id')
         ;;
     healthcheck)
-        for site in $(find  -maxdepth 4 /var/www/html -type f -name "wp-config.php")
+        for site in $(find /var/www/html -maxdepth 4 -type f -name "wp-config.php")
         do
             SITE_NAME=$(echo $site  | cut -d\/ -f5)
             WEB_ROOT=$(dirname "${site}")
