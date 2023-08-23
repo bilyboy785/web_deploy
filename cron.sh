@@ -304,17 +304,19 @@ case $1 in
                 HC_PING_URL=$(curl -s -X POST "https://healthchecks.bldwebagency.fr/api/v3/checks/" --header "X-Api-Key: PFyzt8uS_se--zYpr5KcJlendT-V5cek" \
                         --data '{"name": "[WP Cron] '${FTP_DOMAIN}'", "slug": "'${HEALTHCHECK_SLUG}'", "tags": "'${SHORT_HOSTNAME}'", "timeout": 900, "grace": 1800, "channels": "*"}')
                 HC_PING_URL_RESULT=$(echo $HC_PING_URL | jq -r '.ping_url')
-                echo -e "MAILTO=\"\"\n*/15 * * * *  RID=\`uuidgen\` && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL_RESULT}/start?rid=\$RID && /usr/local/bin/wp --path=${WEB_ROOT} cron event run --due-now && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL_RESULT}?rid=\$RID" | crontab -u ${OWNER} -
+                echo -e "MAILTO=\"\"\n*/15 * * * *  RID=\`uuidgen\` && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL_RESULT}/start?rid=\$RID && CRON_LOG=$(/usr/local/bin/wp --path=${WEB_ROOT} cron event run --due-now 2>&1) && curl -fsS -m 10 --retry 5 --data-raw "$CRON_LOG" ${HC_PING_URL_RESULT}?rid=\$RID" | crontab -u ${OWNER} -
             else
-                echo -e "MAILTO=\"\"\n*/15 * * * *  RID=\`uuidgen\` && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL}/start?rid=\$RID && /usr/local/bin/wp --path=${WEB_ROOT} cron event run --due-now && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL}?rid=\$RID" | crontab -u ${OWNER} -
+                echo -e "MAILTO=\"\"\n*/15 * * * *  RID=\`uuidgen\` && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL}/start?rid=\$RID && CRON_LOG=$(/usr/local/bin/wp --path=${WEB_ROOT} cron event run --due-now 2>&1) && curl -fsS -m 10 --retry 5 --data-raw "$CRON_LOG" ${HC_PING_URL}?rid=\$RID" | crontab -u ${OWNER} -
             fi
             if [[ -n $(find ${WEB_ROOT}/wp-content/plugins -type d -name "mailpoet") ]]; then
                 echo "$SITE_NAME | Found mailpoet, adding cron..."
                 crontab -u ${OWNER} -l > /tmp/${OWNER}.crontab
                 echo "*/2 * * * * php ${WEB_ROOT}/wp-content/plugins/mailpoet/mailpoet-cron.php ${WEB_ROOT}" >> /tmp/${OWNER}.crontab
                 crontab -u ${OWNER} /tmp/${OWNER}.crontab
+                sudo -u ${OWNER} wp config --path=${WEB_ROOT} set DISABLE_WP_CRON true
                 rm -f /tmp/${OWNER}.crontab
             fi
+            exit 0
         done
         # exit 0
 
