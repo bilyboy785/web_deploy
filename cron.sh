@@ -313,10 +313,19 @@ case $1 in
                 crontab -u ${OWNER} -l > /tmp/${OWNER}.crontab
                 echo "*/2 * * * * php ${WEB_ROOT}/wp-content/plugins/mailpoet/mailpoet-cron.php ${WEB_ROOT}" >> /tmp/${OWNER}.crontab
                 crontab -u ${OWNER} /tmp/${OWNER}.crontab
-                sudo -u ${OWNER} wp config --path=${WEB_ROOT} set DISABLE_WP_CRON true
                 rm -f /tmp/${OWNER}.crontab
             fi
-            exit 0
+            echo "$SITE_NAME | Updating wp-config"
+            sudo -u ${OWNER} wp config --path=${WEB_ROOT} set DISABLE_WP_CRON true
+            if [[ -f ${WEB_ROOT}/wp-config-sample.php ]]; then
+                rm -f ${WEB_ROOT}/wp-config-sample.php
+            fi
+            if [[ -f ${WEB_ROOT}/license.txt ]]; then
+                rm -f ${WEB_ROOT}/license.txt
+            fi
+            if [[ -f ${WEB_ROOT}/readme.html ]]; then
+                rm -f ${WEB_ROOT}/readme.html
+            fi
         done
         # exit 0
 
