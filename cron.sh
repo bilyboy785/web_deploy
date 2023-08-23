@@ -326,8 +326,10 @@ case $1 in
             if [[ -f ${WEB_ROOT}/readme.html ]]; then
                 rm -f ${WEB_ROOT}/readme.html
             fi
+            sudo -u ${OWNER} wp config delete whl_page > /dev/null 2>&1
+            sudo -u ${OWNER} wp config delete whl_redirect_admin > /dev/null 2>&1
+            sudo -u ${OWNER} wp config delete WHL_PAGE > /dev/null 2>&1
         done
-        # exit 0
 
         # for site in $(ls /var/www/html)
         # do
