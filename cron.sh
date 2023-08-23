@@ -319,7 +319,6 @@ case $1 in
                 crontab -u ${OWNER} /tmp/${OWNER}.crontab
                 rm -f /tmp/${OWNER}.crontab
             fi
-            echo "$SITE_NAME | Updating wp-config"
             sudo -u ${OWNER} wp config --path=${WEB_ROOT} set DISABLE_WP_CRON true > /dev/null 2>&1
             if [[ -f ${WEB_ROOT}/wp-config-sample.php ]]; then
                 rm -f ${WEB_ROOT}/wp-config-sample.php
