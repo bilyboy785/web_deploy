@@ -395,7 +395,7 @@ case $1 in
         if [[ -z ${HC_PING_URL} ]]; then
             HC_PING_URL=$(curl -s -X GET --header "X-Api-Key: PFyzt8uS_se--zYpr5KcJlendT-V5cek" "https://healthchecks.bldwebagency.fr/api/v3/checks/" | jq -r '.checks[] | select(.name | contains("'${SITE_NAME}'"))' | jq -r '.ping_url')
         fi
-        echo -e "MAILTO=\"\"\n*/15 * * * *  RID=\`uuidgen\` && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL}/start?rid=\$RID && /usr/local/bin/wp --path=${FULL_PATH} cron event run --due-now && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL}?rid=\$RID" | crontab -u ${OWNER} -
+        echo -e "MAILTO=\"\"\n*/15 * * * *  RID=\`uuidgen\` && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL}/start?rid=\$RID && /usr/local/bin/wp --path=${FULL_PATH} cron event run --due-now > /tmp/${OWNER}.cron.log 2>&1 && curl -fsS -m 10 --retry 5 --data-binary @/tmp/${OWNER}.cron.log ${HC_PING_URL}?rid=\$RID" | crontab -u ${OWNER} -
         ;;
     *)
         ;;
