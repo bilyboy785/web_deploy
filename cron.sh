@@ -388,13 +388,12 @@ case $1 in
         ;;
     cron)
         SITE_NAME=$2
-        FULL_PATH="/var/www/html/${SITE_NAME}/web"
+        SITE_DIR=$(find /var/www/html -maxdepth 1 -type d -name "*$SITE_NAME*")
+        FULL_PATH="${SITE_DIR}/web"
         OWNER=$(stat -c "%U" ${FULL_PATH})
         FTP_DOMAIN=$(echo ${SITE_NAME} | sed 's/www\.//g' | sed 's/demo1\.//g' | sed 's/demo2\.//g' | sed 's/demo3\.//g' | sed 's/dev\.//g')
         echo "Deploying Wordpress cron for $OWNER"
-        if [[ -z ${HC_PING_URL} ]]; then
-            HC_PING_URL=$(curl -s -X GET --header "X-Api-Key: PFyzt8uS_se--zYpr5KcJlendT-V5cek" "https://healthchecks.bldwebagency.fr/api/v3/checks/" | jq -r '.checks[] | select(.name | contains("'${SITE_NAME}'"))' | jq -r '.ping_url')
-        fi
+        HC_PING_URL=$(curl -s -X GET --header "X-Api-Key: PFyzt8uS_se--zYpr5KcJlendT-V5cek" "https://healthchecks.bldwebagency.fr/api/v3/checks/" | jq -r '.checks[] | select(.name | contains("'${SITE_NAME}'"))' | jq -r '.ping_url')
         echo -e "MAILTO=\"\"\n*/15 * * * *  RID=\`uuidgen\` && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL}/start?rid=\$RID && /usr/local/bin/wp --path=${FULL_PATH} cron event run --due-now > /tmp/${OWNER}.cron.log 2>&1 && curl -fsS -m 10 --retry 5 --data-binary @/tmp/${OWNER}.cron.log ${HC_PING_URL}?rid=\$RID" | crontab -u ${OWNER} -
         ;;
     *)
