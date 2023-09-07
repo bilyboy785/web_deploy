@@ -281,13 +281,14 @@ case $1 in
                         -H "X-Auth-Email: ${CF_EMAIL}" -H "X-Auth-Key: ${CF_APIKEY}" -H "Content-Type: application/json" | /root/.local/bin/jq '.result[] | select(.ip == "'${IP}'")' | /root/.local/bin/jq -r '.id')
         ;;
     healthcheck)
-        CRON_MIN="5"
-        for site in $(find /var/www/html -maxdepth 4 -type f -name "wp-config.php")
+        CRON_MIN="10"
+        find /var/www/html -maxdepth 3 -type f -name "wp-config-sample.php" -exec rm -f '{}' \;
+        for site in $(find /var/www/html -maxdepth 3 -type f -name "wp-config.php")
         do
             SITE_NAME=$(echo $site | cut -d\/ -f5)
             echo "## $SITE_NAME"
             case $SITE_NAME in
-                dtses.bldwebagency.fr|jerome-tavernier.com|dev.bldwebagency.fr|www.dansetousstyles.quebec|generationsjardins.com)
+                dtses.bldwebagency.fr|jerome-tavernier.com|dev.bldwebagency.fr|generationsjardins.com)
                     continue
                     ;;
                 frenchmac.com)
@@ -308,9 +309,9 @@ case $1 in
                 HC_PING_URL=$(curl -s -X POST "https://healthchecks.bldwebagency.fr/api/v3/checks/" --header "X-Api-Key: PFyzt8uS_se--zYpr5KcJlendT-V5cek" \
                         --data '{"name": "[WP Cron] '${FTP_DOMAIN}'", "slug": "'${HEALTHCHECK_SLUG}'", "tags": "'${SHORT_HOSTNAME}'", "timeout": 900, "grace": 1800, "channels": "*"}')
                 HC_PING_URL_RESULT=$(echo $HC_PING_URL | jq -r '.ping_url')
-                echo -e "MAILTO=\"\"\n*/${CRON_MIN} * * * *  RID=\`uuidgen\` && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL_RESULT}/start?rid=\$RID && /usr/local/bin/wp --path=${WEB_ROOT} cron event run --due-now > /tmp/${OWNER}.cron.log 2>&1 && curl -fsS -m 10 --retry 5 --data-binary @/tmp/${OWNER}.cron.log ${HC_PING_URL_RESULT}?rid=\$RID" | crontab -u ${OWNER} -
+                echo -e "MAILTO=\"\"\n*/${CRON_MIN} * * * *  RID=\`uuidgen\` && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL_RESULT}/start?rid=\$RID && /usr/local/bin/wp --path=${WEB_ROOT} cron event run --due-now > /tmp/${OWNER}.cron.log 2>&1 && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL_RESULT}?rid=\$RID" | crontab -u ${OWNER} -
             else
-                echo -e "MAILTO=\"\"\n*/${CRON_MIN} * * * *  RID=\`uuidgen\` && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL}/start?rid=\$RID && /usr/local/bin/wp --path=${WEB_ROOT} cron event run --due-now > /tmp/${OWNER}.cron.log 2>&1 && curl -fsS -m 10 --retry 5 --data-binary @/tmp/${OWNER}.cron.log ${HC_PING_URL}?rid=\$RID" | crontab -u ${OWNER} -
+                echo -e "MAILTO=\"\"\n*/${CRON_MIN} * * * *  RID=\`uuidgen\` && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL}/start?rid=\$RID && /usr/local/bin/wp --path=${WEB_ROOT} cron event run --due-now > /tmp/${OWNER}.cron.log 2>&1 && curl -fsS -m 10 --retry 5 -o /dev/null ${HC_PING_URL}?rid=\$RID" | crontab -u ${OWNER} -
             fi
             if [[ -n $(find ${WEB_ROOT}/wp-content/plugins -type d -name "mailpoet") ]]; then
                 echo "$SITE_NAME | Found mailpoet, adding cron..."
