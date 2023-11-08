@@ -690,7 +690,7 @@ case $1 in
                     yes|y|YES|Y|o|O|oui|OUI)
                         echo " - Création du healthcheck"
                         HEALTHCHECK_UPDATE_URL=$(curl -s -X POST "https://healthchecks.bldwebagency.fr/api/v3/checks/" --header "X-Api-Key: PFyzt8uS_se--zYpr5KcJlendT-V5cek" \
-                            --data '{"name": "[WP Cron] '${FTP_DOMAIN}'", "slug": "'${HEALTHCHECK_SLUG}'", "tags": "'${SHORT_HOSTNAME}'", "timeout": 900, "grace": 1800, "channels": "*"}' | jq -r '.update_url')
+                            --data '{"name": "[WP Cron] '${FTP_DOMAIN}'", "slug": "'${HEALTHCHECK_SLUG}'", "tags": "'${SHORT_HOSTNAME}'", "timeout": 900, "grace": 1800, "channels": "*"}' | jq -r '.ping_url')
                         ;;
                     *)
                         ;;
