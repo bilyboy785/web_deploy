@@ -404,11 +404,15 @@ case $1 in
         read -p "We are going to delete all files, database and user for $PRIMARY_DOMAIN, ok ? " DELETE_YES
         case $DELETE_YES in
             y|yes|o|oui)
-                echo " - Removing Nginx configuration"
-                rm -f /etc/nginx/sites-enabled/${PRIMARY_DOMAIN}.conf
-                rm -f /etc/nginx/sites-available/${PRIMARY_DOMAIN}.conf
-                echo " - Revoking SSL certificate"
-                certbot delete -n --cert-name ${PRIMARY_DOMAIN}
+                if [[ -f /etc/nginx/sites-available/${PRIMARY_DOMAIN}.conf ]]; then
+                    echo " - Removing Nginx configuration"
+                    rm -f /etc/nginx/sites-enabled/${PRIMARY_DOMAIN}.conf
+                    rm -f /etc/nginx/sites-available/${PRIMARY_DOMAIN}.conf
+                fi
+                if [[ -f /etc/letsencrypt/live/${PRIMARY_DOMAIN}/fullchain.pem ]]; then
+                    echo " - Revoking SSL certificate"
+                    certbot delete -n --cert-name ${PRIMARY_DOMAIN}
+                fi
                 echo " - Reloading Nginx"
                 systemctl reload nginx.service
                 if [[ -f /etc/nginx/rewrites/${PRIMARY_DOMAIN}.conf ]]; then
@@ -417,7 +421,9 @@ case $1 in
                 echo " - Removing PHP confguration"
                 PHP_VERS_TO_RELOAD=$(find /etc/php -type f -name "*$PRIMARY_DOMAIN*" | cut -d\/ -f4)
                 find /etc/php -type f -name "*$PRIMARY_DOMAIN*" -exec rm -f '{}' \;
-                systemctl restart php${PHP_VERS_TO_RELOAD}-fpm.service
+                if [[ $? -eq 0 ]]; then
+                    systemctl restart php${PHP_VERS_TO_RELOAD}-fpm.service
+                fi
                 echo " - Dumping SQL Database"
                 mysqldump ${SQL_DATABASE} | gzip > /srv/backup/${REMOVAL_DATE}-${PRIMARY_DOMAIN}.sql.gz
                 echo " - Removing SQL Database"
