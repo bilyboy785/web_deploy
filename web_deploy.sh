@@ -447,6 +447,9 @@ case $1 in
                 echo " - Deleting User & Group"
                 userdel ${PAM_USER} >/dev/null 2>&1
                 groupdel ${PAM_USER} >/dev/null 2>&1
+
+                echo " - Deleting env File"
+                rm -f /opt/websites/${PRIMARY_DOMAIN}.env
                 ;;
             *)
                 exit 0
