@@ -77,19 +77,19 @@ case $1 in
         for IPV4 in $(curl -s https://www.cloudflare.com/ips-v4)
         do
             REALIP="${REALIP}set_real_ip_from ${IPV4};\n"
-            cat /etc/crowdsec/parsers/s02-enrich/whitelist.yaml | grep ${IPV4} > /dev/null 2>&1
-            if [[ ! $? -eq 0 ]]; then
-                yq -i '.whitelist.ip += "'${IPV4}'"' /etc/crowdsec/parsers/s02-enrich/whitelist.yaml
-            fi
+            # cat /etc/crowdsec/parsers/s02-enrich/whitelist.yaml | grep ${IPV4} > /dev/null 2>&1
+            # if [[ ! $? -eq 0 ]]; then
+            #     yq -i '.whitelist.ip += "'${IPV4}'"' /etc/crowdsec/parsers/s02-enrich/whitelist.yaml
+            # fi
         done
 
         for IPV6 in $(curl -s https://www.cloudflare.com/ips-v6)
         do
             REALIP="${REALIP}set_real_ip_from ${IPV6};\n"
-            cat /etc/crowdsec/parsers/s02-enrich/whitelist.yaml | grep ${IPV6} > /dev/null 2>&1
-            if [[ ! $? -eq 0 ]]; then
-                yq -i '.whitelist.ip += "'${IPV6}'"' /etc/crowdsec/parsers/s02-enrich/whitelist.yaml
-            fi
+            # cat /etc/crowdsec/parsers/s02-enrich/whitelist.yaml | grep ${IPV6} > /dev/null 2>&1
+            # if [[ ! $? -eq 0 ]]; then
+            #     yq -i '.whitelist.ip += "'${IPV6}'"' /etc/crowdsec/parsers/s02-enrich/whitelist.yaml
+            # fi
         done
 
         REALIP="${REALIP}\n"
