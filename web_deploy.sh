@@ -44,13 +44,13 @@ function init_server {
     echo "# Updating system"
     DEBIAN_FRONTEND=noninteractive apt update -qq > /dev/null 2>&1 && DEBIAN_FRONTEND=noninteractive apt upgrade -yqq > /dev/null 2>&1
     echo "# Installing base packages"
-    DEBIAN_FRONTEND=noninteractive apt install -yqq git zsh curl clamav clamav-daemon wget htop python3 borgbackup python3-msgpack webp imagemagick libfuse-dev fuse pkg-config libacl1-dev bat software-properties-common pkg-config libattr1-dev libssl-dev liblz4-dev ripgrep fail2ban python3-venv python3-pip proftpd mariadb-client mariadb-server docker.io redis-server > /dev/null 2>&1
+    DEBIAN_FRONTEND=noninteractive apt install -yqq git zsh curl clamav clamav-daemon wget htop python3 python3-msgpack webp imagemagick libfuse-dev fuse pkg-config libacl1-dev bat software-properties-common pkg-config libattr1-dev libssl-dev liblz4-dev ripgrep fail2ban python3-venv python3-pip proftpd mariadb-client mariadb-server docker.io redis-server > /dev/null 2>&1
     curl -sL "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64" -o $HOME/.local/bin/yq && chmod +x $HOME/.local/bin/yq
     curl -sL "https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64" -o $HOME/.local/bin/jq && chmod +x $HOME/.local/bin/jq
 
-    if [[ ! -f /root/.local/bin/bat ]]; then
-        ln -s /usr/bin/batcat ~/.local/bin/bat
-    fi
+    # if [[ ! -f /root/.local/bin/bat ]]; then
+    #     ln -s /usr/bin/batcat ~/.local/bin/bat
+    # fi
 
     echo "# Server Tuning"
     if [[ ! -f /opt/.servertuning ]]; then
@@ -83,16 +83,6 @@ function init_server {
     echo "# Installation de pfetch"
     wget -q https://raw.githubusercontent.com/dylanaraps/pfetch/master/pfetch -O ~/.local/bin/pfetch
     chmod +x ~/.local/bin/pfetch
-
-    echo "# Configuration du motd"
-    chmod -x /etc/update-motd.d/*
-    touch /etc/update-motd.d/01-pfetch && chmod +x /etc/update-motd.d/01-pfetch
-    tee -a /etc/update-motd.d/01-pfetch << END
-#!/bin/bash
-echo ""
-export PF_INFO="os host kernel uptime pkgs memory"
-/root/.local/bin/pfetch
-END
 
     if [[ ! -d $HOME/.oh-my-zsh ]]; then
         echo "# Installation de ohmyzsh"
@@ -128,7 +118,7 @@ END
     echo "# Installation de pipx"
     python3 -m pip install --user pipx  > /dev/null 2>&1
     python3 -m pipx ensurepath  > /dev/null 2>&1
-    PIPX_TOOLS=(pwgen j2cli bpytop certbot-dns-cloudflare borgmatic apprise)
+    PIPX_TOOLS=(pwgen j2cli bpytop certbot-dns-cloudflare borgbackup borgmatic apprise)
     for PIPX_TOOL in ${PIPX_TOOLS[@]}
     do
         /root/.local/bin/pipx list | grep ${PIPX_TOOL} > /dev/null 2>&1
@@ -264,25 +254,10 @@ END
         systemctl restart nginx.service > /dev/null 2>&1
     fi
 
-    if [[ ! -f /opt/promtail.config.yml ]]; then
+    if [[ ! -f /opt/docker-compose.yml ]]; then
         curl -s https://raw.githubusercontent.com/bilyboy785/public/main/monitoring/docker-compose.yml.j2 -o /opt/docker-compose.yml
-        curl -s https://raw.githubusercontent.com/bilyboy785/public/main/monitoring/promtail.config.yml -o /opt/promtail.config.yml
-        if [[ ! -z $1 ]]; then
-            MONITORING_IP=$1
-        else
-            read -p "Adresse IP de la stack de monitoring (Loki / Prometheus / Grafana) : " MONITORING_IP
-        fi
-        sed -i "s/LOKI_IP/${MONITORING_IP}/g" /opt/promtail.config.yml
-        sed -i "s/YOUR_HOSTNAME/${HOSTNAME}/g" /opt/promtail.config.yml
         docker-compose -p monitoring -f /opt/docker-compose.yml pull
         docker-compose -p monitoring -f /opt/docker-compose.yml up -d
-        wget -q https://github.com/Lusitaniae/phpfpm_exporter/releases/download/v0.6.0/phpfpm_exporter-0.6.0.linux-amd64.tar.gz -O /tmp/phpfpm_exporter-0.6.0.linux-amd64.tar.gz
-        tar xf /tmp/phpfpm_exporter-0.6.0.linux-amd64.tar.gz -C /tmp/
-        mv /tmp/phpfpm_exporter-0.6.0.linux-amd64/phpfpm_exporter /opt/phpfpm_exporter
-        curl -s https://raw.githubusercontent.com/bilyboy785/public/main/monitoring/phpfpm-exporter.service -o /lib/systemd/system/phpfpm-exporter.service
-        systemctl enable phpfpm-exporter.service >/dev/null 2>&1
-        systemctl daemon-reload >/dev/null 2>&1
-        systemctl start phpfpm-exporter.service >/dev/null 2>&1
     fi
     
     mkdir -p /var/www/errors > /dev/null 2>&1
@@ -358,19 +333,16 @@ END
     ufw allow 'OpenSSH' > /dev/null 2>&1
     ufw allow 'Proftpd' > /dev/null 2>&1
     ufw allow 49152:65535/tcp > /dev/null 2>&1
-    ufw allow from ${MONITORING_IP} proto tcp to any port 9113 > /dev/null 2>&1
-    ufw allow from ${MONITORING_IP} proto tcp to any port 9253 > /dev/null 2>&1
-    ufw allow from ${MONITORING_IP} proto tcp to any port 9100 > /dev/null 2>&1
-    ufw allow from ${MONITORING_IP} proto tcp to any port 9191 > /dev/null 2>&1
+    ufw allow from 163.172.33.112 proto tcp to any port 9113 > /dev/null 2>&1
+    ufw allow from 163.172.33.112 proto tcp to any port 9253 > /dev/null 2>&1
+    ufw allow from 163.172.33.112 proto tcp to any port 9100 > /dev/null 2>&1
+    ufw allow from 163.172.33.112 proto tcp to any port 9191 > /dev/null 2>&1
     ufw --force enable > /dev/null 2>&1
-
-    echo "# Run the following command to update default shell :"
-    echo "  chsh -s $(which zsh)"
 }
 
 case $1 in
     init|-i|--i)
-        init_server $2
+        init_server
         ;;
     update|-u|--u)
         echo "# Updating repo"
