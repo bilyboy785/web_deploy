@@ -1,6 +1,12 @@
 #!/bin/bash
 SRVHOSTNAME=$(hostname -s)
 export SHORT_HOSTNAME=$(hostname -s)
+
+if [[ ! -f /root/.telegram.secrets ]]; then
+    touch /root/.telegram.secrets
+    echo "CHATID=" >> /root/.telegram.secrets 
+    echo "TOKEN=" >> /root/.telegram.secrets 
+fi
 TG_CHADID=$(cat /root/.telegram.secrets | grep CHATID | cut -d\= -f2 | sed 's/\"//g')
 TG_TOKEN=$(cat /root/.telegram.secrets | grep TOKEN | cut -d\= -f2 | sed 's/\"//g')
 
