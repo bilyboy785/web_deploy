@@ -48,7 +48,7 @@ case $1 in
         # apprise -vv -t "[${SRVHOSTNAME^^}] - GeoIP Legacy Updater" -b "GeoIP database successfully updated" tgram://${TG_TOKEN}/${TG_CHADID}/
         ;;
     fail2banignoreip)
-        TRUSTED_IP="163.172.53.51 163.172.51.134 163.172.33.112 82.66.241.38"
+        TRUSTED_IP="163.172.53.51 163.172.51.134 163.172.33.112 82.66.241.38 163.172.64.23"
 
         IGNOREIP_LIST_TMP="${TRUSTED_IP}"
         
@@ -65,11 +65,6 @@ case $1 in
         IGNOREIP_LIST=$(echo ${IGNOREIP_LIST_TMP} | sed 's/\//\\\//g')
         
         sed -i "s/ignoreip.*/ignoreip\ =\ ${IGNOREIP_LIST}/g" /etc/fail2ban/jail.local
-
-        # systemctl restart fail2ban.service
-        # if [[ $? -eq 0 ]]; then
-        #     apprise -vv -t "[${SRVHOSTNAME^^}] - Fail2ban Ignore IP" -b "IgnoreIP successfully updated for Fail2ban jail" tgram://${TG_TOKEN}/${TG_CHADID}/
-        # fi
         ;;
     cloudflarerealip)
         REALIP="# Updated $(date '+%Y-%m-%d %H:%M:%S')\n"
