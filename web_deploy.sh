@@ -80,7 +80,9 @@ function init_server {
     curl -SL https://github.com/docker/compose/releases/download/v2.15.1/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose > /dev/null 2>&1
     chmod +x /usr/local/bin/docker-compose > /dev/null 2>&1
 
-    echo "# Installation de pfetch"
+    echo "# Installation de dynamotd"
+    curl -L https://github.com/gdubicki/dynamotd/releases/latest/download/dynamotd-linux-amd64 -o /usr/local/bin/dynamotd
+    chmod +x /usr/local/bin/dynamotd
     wget -q https://raw.githubusercontent.com/dylanaraps/pfetch/master/pfetch -O ~/.local/bin/pfetch
     chmod +x ~/.local/bin/pfetch
 
@@ -272,6 +274,7 @@ END
     echo "# Installation de WP-CLI"
     curl -sL https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -o /usr/local/bin/wp && chmod +x /usr/local/bin/wp > /dev/null 2>&1
 
+    export PHP_VERSIONS=(8.2)
     for PHP_VERSION in ${PHP_VERSIONS[@]}
     do
         if [[ ! -f /usr/bin/php${PHP_VERSION} ]]; then
